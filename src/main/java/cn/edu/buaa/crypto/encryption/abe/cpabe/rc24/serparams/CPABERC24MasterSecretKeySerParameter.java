@@ -18,13 +18,41 @@ public class CPABERC24MasterSecretKeySerParameter extends PairingKeySerParameter
     private transient Element alpha;
     private final byte[] byteArrayAlpha;
 
-    public CPABERC24MasterSecretKeySerParameter(PairingParameters pairingParameters, Element alpha) {
+    private transient Element hAb;
+    private final byte[] byteArrayHAb;
+
+    private transient Element hAh;
+    private final byte[] byteArrayHAh;
+
+    private transient Element hAg;
+    private final byte[] byteArrayHAg;
+
+    private transient Element hashAID;
+    private final byte[] byteArrayHashAID;
+
+    public CPABERC24MasterSecretKeySerParameter(PairingParameters pairingParameters, Element alpha, Element hAb, Element hAh, Element hAg, Element hashAID) {
         super(true, pairingParameters);
         this.alpha = alpha.getImmutable();
         this.byteArrayAlpha = this.alpha.toBytes();
+
+        this.hAb = hAb.getImmutable();
+        this.byteArrayHAb = this.hAb.toBytes();
+
+        this.hAh = hAh.getImmutable();
+        this.byteArrayHAh = this.hAh.toBytes();
+
+        this.hAg = hAg.getImmutable();
+        this.byteArrayHAg = this.hAg.toBytes();
+
+        this.hashAID = hashAID.getImmutable();
+        this.byteArrayHashAID = this.hashAID.toBytes();
     }
 
     public Element getAlpha() { return this.alpha.duplicate(); }
+    public Element getHAb() { return this.hAb.duplicate(); }
+    public Element getHAh() { return this.hAh.duplicate(); }
+    public Element getHAg() { return this.hAg.duplicate(); }
+    public Element getHashAID() { return this.hashAID.duplicate(); }
 
     @Override
     public boolean equals(Object anObject) {
@@ -40,6 +68,34 @@ public class CPABERC24MasterSecretKeySerParameter extends PairingKeySerParameter
             if (!Arrays.equals(this.byteArrayAlpha, that.byteArrayAlpha)) {
                 return false;
             }
+            //compare hAb
+            if (!(PairingUtils.isEqualElement(this.hAb, that.hAb))) {
+                return false;
+            }
+            if (!Arrays.equals(this.byteArrayHAb, that.byteArrayHAb)) {
+                return false;
+            }
+            //compare hAh
+            if (!(PairingUtils.isEqualElement(this.hAh, that.hAh))) {
+                return false;
+            }
+            if (!Arrays.equals(this.byteArrayHAh, that.byteArrayHAh)) {
+                return false;
+            }
+            //compare hAg
+            if (!(PairingUtils.isEqualElement(this.hAg, that.hAg))) {
+                return false;
+            }
+            if (!Arrays.equals(this.byteArrayHAg, that.byteArrayHAg)) {
+                return false;
+            }
+            //compare hashAID
+            if (!(PairingUtils.isEqualElement(this.hashAID, that.hashAID))) {
+                return false;
+            }
+            if (!Arrays.equals(this.byteArrayHashAID, that.byteArrayHashAID)) {
+                return false;
+            }
             //Compare Pairing Parameters
             return this.getParameters().toString().equals(that.getParameters().toString());
         }
@@ -51,5 +107,9 @@ public class CPABERC24MasterSecretKeySerParameter extends PairingKeySerParameter
         objectInputStream.defaultReadObject();
         Pairing pairing = PairingFactory.getPairing(this.getParameters());
         this.alpha = pairing.getZr().newElementFromBytes(this.byteArrayAlpha).getImmutable();
+        this.hAb = pairing.getZr().newElementFromBytes(this.byteArrayHAb).getImmutable();
+        this.hAh = pairing.getZr().newElementFromBytes(this.byteArrayHAh).getImmutable();
+        this.hAg = pairing.getZr().newElementFromBytes(this.byteArrayHAg).getImmutable();
+        this.hashAID = pairing.getZr().newElementFromBytes(this.byteArrayHashAID).getImmutable();
     }
 }
