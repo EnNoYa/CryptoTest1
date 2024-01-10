@@ -30,8 +30,8 @@ public class CPABERC24HeaderSerParameter extends PairingCipherSerParameter {
     protected transient Map<String, Element> C3s;
     private final byte[][] byteArraysC3s;
 
-    public CPABERC24HeaderSerParameter(PairingParameters pairingParameters, Element C0,
-                                       Map<String, Element> C1s, Map<String, Element> C2s, Map<String, Element> C3s) {
+    public CPABERC24HeaderSerParameter(PairingParameters pairingParameters, Element Ev,
+                                       Element Es, Map<String, Element> E1, Map<String, Element> E2, Map<String, Element> E3, Map<String, Element> E4) {
         super(pairingParameters);
 
         this.rhos = C1s.keySet().toArray(new String[1]);

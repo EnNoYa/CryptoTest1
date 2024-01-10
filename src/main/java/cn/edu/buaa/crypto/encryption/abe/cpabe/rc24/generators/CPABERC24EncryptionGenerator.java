@@ -10,6 +10,7 @@ import cn.edu.buaa.crypto.encryption.abe.cpabe.genparams.CPABEEncryptionGenerati
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.serparams.CPABERC24CiphertextSerParameter;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.serparams.CPABERC24HeaderSerParameter;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.serparams.CPABERC24PublicKeySerParameter;
+import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.tools.CPABERC24Hash;
 import cn.edu.buaa.crypto.utils.PairingUtils;
 import it.unisa.dia.gas.jpbc.Element;
 import it.unisa.dia.gas.jpbc.Pairing;
@@ -29,12 +30,14 @@ public class CPABERC24EncryptionGenerator implements PairingEncryptionGenerator,
     protected CPABEEncryptionGenerationParameter parameter;
     protected AccessControlParameter accessControlParameter;
     protected Element s;
-    protected Element sessionKey;
-    protected Element C0;
-    protected Map<String, Element> C1s;
-    protected Map<String, Element> C2s;
-    protected Map<String, Element> C3s;
-
+    protected Element zeta;
+    protected Element Es;
+    protected Element Ev;
+    protected Map<String, Element> E1;
+    protected Map<String, Element> E2;
+    protected Map<String, Element> E3;
+    protected Map<String, Element> E4;
+    
     public void init(CipherParameters parameter) {
         this.parameter = (CPABEEncryptionGenerationParameter) parameter;
         this.publicKeyParameter = (CPABERC24PublicKeySerParameter) this.parameter.getPublicKeyParameter();
@@ -42,39 +45,52 @@ public class CPABERC24EncryptionGenerator implements PairingEncryptionGenerator,
 
     protected void computeEncapsulation() {
         int[][] accessPolicy = this.parameter.getAccessPolicy();
-        String[] rhos = this.parameter.getRhos();
+        String[] rhos = this.parameter.getRhos(); //(A,p<---this)
         AccessControlEngine accessControlEngine = this.parameter.getAccessControlEngine();
         this.accessControlParameter = accessControlEngine.generateAccessControl(accessPolicy, rhos);
 
         Pairing pairing = PairingFactory.getPairing(publicKeyParameter.getParameters());
-        this.s = pairing.getZr().newRandomElement().getImmutable();
-        this.sessionKey = publicKeyParameter.getEggAlpha().powZn(s).getImmutable();
-        this.C0 = publicKeyParameter.getG().powZn(s).getImmutable();
+        this.s = pairing.getG1().newRandomElement().getImmutable();
+        this.Es = publicKeyParameter.getG().powZn(s).getImmutable();
 
         Map<String, Element> lambdas = accessControlEngine.secretSharing(pairing, s, accessControlParameter);
-        this.C1s = new HashMap<String, Element>();
-        this.C2s = new HashMap<String, Element>();
-        this.C3s = new HashMap<String, Element>();
+        Map<String, Element> omegas = accessControlEngine.secretSharing(pairing, pairing.getZr().newElement(0), accessControlParameter);
+        this.E1 = new HashMap<String, Element>();
+        this.E2 = new HashMap<String, Element>();
+        this.E3 = new HashMap<String, Element>();
+        this.E4 = new HashMap<String, Element>();
         for (String rho : lambdas.keySet()) {
-            Element elementRho = PairingUtils.MapStringToGroup(pairing, rho, PairingUtils.PairingGroupType.Zr);
-            Element ti = pairing.getZr().newRandomElement().getImmutable();
-            C1s.put(rho, publicKeyParameter.getW().powZn(lambdas.get(rho)).mul(publicKeyParameter.getV().powZn(ti)).getImmutable());
-            C2s.put(rho, publicKeyParameter.getU().powZn(elementRho).mul(publicKeyParameter.getH()).powZn(ti.negate()).getImmutable());
-            C3s.put(rho, publicKeyParameter.getG().powZn(ti).getImmutable());
+            // Element elementRho = PairingUtils.MapStringToGroup(pairing, rho, PairingUtils.PairingGroupType.Zr);
+            this.zeta = pairing.getZr().newRandomElement().getImmutable();
+            Element E1s = publicKeyParameter.getGHh().get(rho).negate().mul(zeta).getImmutable();
+            E1s = E1s.powZn(publicKeyParameter.getCt()).getImmutable();
+            E1s = E1s.mul(publicKeyParameter.getG().powZn(lambdas.get(rho))).getImmutable();
+            Element E3s = publicKeyParameter.getEggHb().get(rho).mul(zeta).getImmutable();
+            E3s = E3s.powZn(publicKeyParameter.getCt()).getImmutable();
+            Element E4s = publicKeyParameter.getGHg().get(rho).mul(zeta).getImmutable();
+            E4s = E4s.powZn(publicKeyParameter.getCt()).getImmutable();
+            E4s = E4s.mul(publicKeyParameter.getG().powZn(omegas.get(rho))).getImmutable();
+            E1.put(rho, E1s);
+            E2.put(rho, publicKeyParameter.getG().powZn(zeta));
+            E3.put(rho, E3s);
+            E4.put(rho, E4s);
         }
     }
 
     public PairingCipherSerParameter generateCiphertext() {
         computeEncapsulation();
-        Element C = this.sessionKey.mul(this.parameter.getMessage()).getImmutable();
-        return new CPABERC24CiphertextSerParameter(publicKeyParameter.getParameters(), C, C0, C1s, C2s, C3s);
-    }
 
+        Pairing pairing = PairingFactory.getPairing(publicKeyParameter.getParameters());
+        Element Em = publicKeyParameter.getEggAlpha().powZn(s).mul(this.parameter.getMessage()).getImmutable();
+        Element Ev = CPABERC24Hash.GthashToZp(Em,pairing);
+        return new CPABERC24CiphertextSerParameter(publicKeyParameter.getParameters(), Em, Ev, Es, E1, E2, E3, E4);
+    }
+    // ?
     public PairingKeyEncapsulationSerPair generateEncryptionPair() {
         computeEncapsulation();
         return new PairingKeyEncapsulationSerPair(
-                this.sessionKey.toBytes(),
-                new CPABERC24HeaderSerParameter(publicKeyParameter.getParameters(), C0, C1s, C2s, C3s)
+                this.Ev.toBytes(),
+                new CPABERC24HeaderSerParameter(publicKeyParameter.getParameters(), Ev, Es, E1, E2, E3, E4)
         );
     }
 }

@@ -19,9 +19,9 @@ public class CPABERC24CiphertextSerParameter extends CPABERC24HeaderSerParameter
     private transient Element C;
     private final byte[] byteArrayC;
 
-    public CPABERC24CiphertextSerParameter(PairingParameters pairingParameters, Element C, Element C0,
-            Map<String, Element> C1s, Map<String, Element> C2s, Map<String, Element> C3s) {
-        super(pairingParameters, C0, C1s, C2s, C3s);
+    public CPABERC24CiphertextSerParameter(PairingParameters pairingParameters, Element Em, Element Ev,
+            Element Es, Map<String, Element> E1, Map<String, Element> E2, Map<String, Element> E3, Map<String, Element> E4) {
+        super(pairingParameters, Ev, Es, E1, E2, E3, E4);
 
         this.C = C.getImmutable();
         this.byteArrayC = this.C.toBytes();

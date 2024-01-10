@@ -6,6 +6,7 @@ import cn.edu.buaa.crypto.encryption.abe.cpabe.genparams.CPABESecretKeyGeneratio
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.serparams.CPABERC24MasterSecretKeySerParameter;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.serparams.CPABERC24PublicKeySerParameter;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.serparams.CPABERC24SecretKeySerParameter;
+import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.tools.CPABERC24Hash;
 import cn.edu.buaa.crypto.utils.PairingUtils;
 import it.unisa.dia.gas.jpbc.Element;
 import it.unisa.dia.gas.jpbc.Pairing;
@@ -16,9 +17,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Edited by ENY 
+ * 
+ * Reference:
+ *
  * Created by Weiran Liu on 2016/11/29.
  *
- * Rouselakia-Waters CP-ABE secret key generator.
+ * Rouselakis-Waters CP-ABE public key / master secret key generator.
  */
 public class CPABERC24SecretKeyGenerator implements PairingKeyParameterGenerator {
     protected CPABESecretKeyGenerationParameter parameter;
@@ -33,21 +38,19 @@ public class CPABERC24SecretKeyGenerator implements PairingKeyParameterGenerator
 
         String[] attributes = this.parameter.getAttributes();
         Pairing pairing = PairingFactory.getPairing(publicKeyParameter.getParameters());
-        Map<String, Element> K2s = new HashMap<String, Element>();
-        Map<String, Element> K3s = new HashMap<String, Element>();
-        Element r = pairing.getZr().newRandomElement().getImmutable();
-        Element K0 = publicKeyParameter.getG().powZn(masterSecretKeyParameter.getAlpha()).mul(publicKeyParameter.getW().powZn(r)).getImmutable();
-        Element K1 = publicKeyParameter.getG().powZn(r).getImmutable();
 
-        Element K3Temp = publicKeyParameter.getV().powZn(r.negate()).getImmutable();
+        Element Sigma = pairing.getZr().newRandomElement().getImmutable();
+        Map<String, Element> UAK1 = new HashMap<String, Element>();
+        Element UAK2 = (publicKeyParameter.getG().powZn(masterSecretKeyParameter.getHashAID())).mul(CPABERC24Hash.ShashToG("UE01",pairing).powZn(masterSecretKeyParameter.getHashAID())).getImmutable();
+        Map<String, Element> D1 = new HashMap<String, Element>();
+        Element D1p = publicKeyParameter.getG().powZn(masterSecretKeyParameter.getHashAID().div(Sigma)).getImmutable();
+        Element D2 = (publicKeyParameter.getG().powZn(masterSecretKeyParameter.getAlpha()).mul(publicKeyParameter.getGEta())).powZn(pairing.getZr().newElement(1).div(Sigma)).getImmutable();
+        Element D3 = publicKeyParameter.getG().powZn(pairing.getZr().newElement(1).div(Sigma)).getImmutable();
+
         for (String attribute : attributes) {
-            Element elementAttribute = PairingUtils.MapStringToGroup(pairing, attribute, PairingUtils.PairingGroupType.Zr);
-            Element ri = pairing.getZr().newRandomElement().getImmutable();
-            K2s.put(attribute, publicKeyParameter.getG().powZn(ri).getImmutable());
-            Element K3i = publicKeyParameter.getU().powZn(elementAttribute).mul(publicKeyParameter.getH()).powZn(ri).getImmutable();
-            K3i = K3i.mul(K3Temp).getImmutable();
-            K3s.put(attribute, K3i);
+            UAK1.put(attribute, (publicKeyParameter.getG().powZn(masterSecretKeyParameter.getHAb().get(attribute))).mul(CPABERC24Hash.ShashToG("UE01",pairing).powZn(masterSecretKeyParameter.getHAg().get(attribute))).getImmutable());
+            D1.put(attribute, publicKeyParameter.getG().powZn(masterSecretKeyParameter.getHAh().get(attribute).div(Sigma)).getImmutable());
         }
-        return new CPABERC24SecretKeySerParameter(publicKeyParameter.getParameters(), K0, K1, K2s, K3s);
+        return new CPABERC24SecretKeySerParameter(publicKeyParameter.getParameters(), Sigma, UAK1, UAK2, D1, D1p, D2, D3);
     }
 }

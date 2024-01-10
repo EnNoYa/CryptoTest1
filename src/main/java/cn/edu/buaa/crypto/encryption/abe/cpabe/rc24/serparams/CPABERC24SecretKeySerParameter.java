@@ -17,54 +17,78 @@ import java.util.Map;
  * Rouselakis-Waters CP-ABE secret key parameter.
  */
 public class CPABERC24SecretKeySerParameter extends PairingKeySerParameter {
-    private transient Element K0;
-    private final byte[] byteArrayK0;
+    private transient Element Sigma;
+    private final byte[] byteArraySigma;
 
-    private transient Element K1;
-    private final byte[] byteArrayK1;
+    private transient Element UAK2;
+    private final byte[] byteArrayUAK2;
 
-    private transient Map<String, Element> K2s;
-    private final Map<String, byte[]> byteArraysK2s;
+    private transient Element D1p;
+    private final byte[] byteArrayD1p;
 
-    private transient Map<String, Element> K3s;
-    private final Map<String, byte[]> byteArraysK3s;
+    private transient Element D2;
+    private final byte[] byteArrayD2;
 
-    public CPABERC24SecretKeySerParameter(PairingParameters pairingParameters, Element K0, Element K1,
-                                          Map<String, Element> K2s, Map<String, Element> K3s) {
+    private transient Element D3;
+    private final byte[] byteArrayD3;
+
+    private transient Map<String, Element> UAK1;
+    private final Map<String, byte[]> byteArraysUAK1;
+
+    private transient Map<String, Element> D1;
+    private final Map<String, byte[]> byteArraysD1;
+
+    public CPABERC24SecretKeySerParameter(PairingParameters pairingParameters, Element  Sigma, Map<String, Element> UAK1, Element UAK2, Map<String, Element> D1, Element D1p, Element D2, Element D3) {
         super(true, pairingParameters);
 
-        this.K0 = K0.getImmutable();
-        this.byteArrayK0 = this.K0.toBytes();
+        this.Sigma = Sigma.getImmutable();
+        this.byteArraySigma = this.Sigma.toBytes();
 
-        this.K1 = K1.getImmutable();
-        this.byteArrayK1 = this.K1.toBytes();
+        this.UAK2 = UAK2.getImmutable();
+        this.byteArrayUAK2 = this.UAK2.toBytes();
 
-        this.K2s = new HashMap<String, Element>();
-        this.byteArraysK2s = new HashMap<String, byte[]>();
-        this.K3s = new HashMap<String, Element>();
-        this.byteArraysK3s = new HashMap<String, byte[]>();
+        this.D1p = D1p.getImmutable();
+        this.byteArrayD1p = this.D1p.toBytes();
 
-        for (String attribute : K2s.keySet()) {
-            this.K2s.put(attribute, K2s.get(attribute).duplicate().getImmutable());
-            this.byteArraysK2s.put(attribute, K2s.get(attribute).duplicate().getImmutable().toBytes());
-            this.K3s.put(attribute, K3s.get(attribute).duplicate().getImmutable());
-            this.byteArraysK3s.put(attribute, K3s.get(attribute).duplicate().getImmutable().toBytes());
+        this.D2 = D2.getImmutable();
+        this.byteArrayD2 = this.D2.toBytes();
+
+        this.D3 = D3.getImmutable();
+        this.byteArrayD3 = this.D3.toBytes();
+
+
+        this.UAK1 = new HashMap<String, Element>();
+        this.byteArraysUAK1 = new HashMap<String, byte[]>();
+        this.D1 = new HashMap<String, Element>();
+        this.byteArraysD1 = new HashMap<String, byte[]>();
+
+        for (String attribute : UAK1.keySet()) {
+            this.UAK1.put(attribute, UAK1.get(attribute).duplicate().getImmutable());
+            this.byteArraysUAK1.put(attribute, UAK1.get(attribute).duplicate().getImmutable().toBytes());
+            this.D1.put(attribute, D1.get(attribute).duplicate().getImmutable());
+            this.byteArraysD1.put(attribute, D1.get(attribute).duplicate().getImmutable().toBytes());
         }
     }
 
-    public String[] getAttributes() { return this.K2s.keySet().toArray(new String[1]); }
+    public String[] getAttributes() { return this.UAK1.keySet().toArray(new String[1]); }
 
-    public Element getK0() { return this.K0.duplicate(); }
+    public Element getSigma() { return this.Sigma.duplicate(); }
 
-    public Element getK1() { return this.K1.duplicate(); }
+    public Element getUAK2() { return this.UAK2.duplicate(); }
+    
+    public Element getD1p() { return this.D1p.duplicate(); }
+    
+    public Element getD2() { return this.D2.duplicate(); }
+    
+    public Element getD3() { return this.D3.duplicate(); }
 
-    public Map<String, Element> getK2s() { return this.K2s; }
+    public Map<String, Element> getUAK1() { return this.UAK1; }
 
-    public Element getK2sAt(String attribute) { return this.K2s.get(attribute).duplicate(); }
+    public Element getUAK1At(String attribute) { return this.UAK1.get(attribute).duplicate(); }
 
-    public Map<String, Element> getK3s() { return this.K3s; }
+    public Map<String, Element> getD1() { return this.D1; }
 
-    public Element getK3sAt(String attribute) { return this.K3s.get(attribute).duplicate(); }
+    public Element getD1At(String attribute) { return this.D1.get(attribute).duplicate(); }
 
     @Override
     public boolean equals(Object anObject) {
@@ -73,32 +97,53 @@ public class CPABERC24SecretKeySerParameter extends PairingKeySerParameter {
         }
         if (anObject instanceof CPABERC24SecretKeySerParameter) {
             CPABERC24SecretKeySerParameter that = (CPABERC24SecretKeySerParameter)anObject;
-            //Compare K0
-            if (!PairingUtils.isEqualElement(this.K0, that.K0)) {
+            //Compare Sigma
+            if (!PairingUtils.isEqualElement(this.Sigma, that.Sigma)) {
                 return false;
             }
-            if (!Arrays.equals(this.byteArrayK0, that.byteArrayK0)) {
+            if (!Arrays.equals(this.byteArraySigma, that.byteArraySigma)) {
                 return false;
             }
-            //Compare k1
-            if (!PairingUtils.isEqualElement(this.K1, that.K1)) {
+            //Compare UAK2
+            if (!PairingUtils.isEqualElement(this.UAK2, that.UAK2)) {
                 return false;
             }
-            if (!Arrays.equals(this.byteArrayK1, that.byteArrayK1)) {
+            if (!Arrays.equals(this.byteArrayUAK2, that.byteArrayUAK2)) {
                 return false;
             }
-            //compare K2s
-            if (!this.K2s.equals(that.K2s)) {
+            //Compare D1p
+            if (!PairingUtils.isEqualElement(this.D1p, that.D1p)) {
                 return false;
             }
-            if (!PairingUtils.isEqualByteArrayMaps(this.byteArraysK2s, that.byteArraysK2s)) {
+            if (!Arrays.equals(this.byteArrayD1p, that.byteArrayD1p)) {
                 return false;
             }
-            //compare K3s
-            if (!this.K3s.equals(that.K3s)) {
+            //Compare D2
+            if (!PairingUtils.isEqualElement(this.D2, that.D2)) {
                 return false;
             }
-            if (!PairingUtils.isEqualByteArrayMaps(this.byteArraysK3s, that.byteArraysK3s)) {
+            if (!Arrays.equals(this.byteArrayD2, that.byteArrayD2)) {
+                return false;
+            }
+            //Compare D3
+            if (!PairingUtils.isEqualElement(this.D3, that.D3)) {
+                return false;
+            }
+            if (!Arrays.equals(this.byteArrayD3, that.byteArrayD3)) {
+                return false;
+            }
+            //compare UAK1
+            if (!this.UAK1.equals(that.UAK1)) {
+                return false;
+            }
+            if (!PairingUtils.isEqualByteArrayMaps(this.byteArraysUAK1, that.byteArraysUAK1)) {
+                return false;
+            }
+            //compare D1
+            if (!this.D1.equals(that.D1)) {
+                return false;
+            }
+            if (!PairingUtils.isEqualByteArrayMaps(this.byteArraysD1, that.byteArraysD1)) {
                 return false;
             }
             //Compare Pairing Parameters
@@ -111,13 +156,16 @@ public class CPABERC24SecretKeySerParameter extends PairingKeySerParameter {
             throws java.io.IOException, ClassNotFoundException {
         objectInputStream.defaultReadObject();
         Pairing pairing = PairingFactory.getPairing(this.getParameters());
-        this.K0 = pairing.getG1().newElementFromBytes(this.byteArrayK0);
-        this.K1 = pairing.getG1().newElementFromBytes(this.byteArrayK1);
-        this.K2s = new HashMap<String, Element>();
-        this.K3s = new HashMap<String, Element>();
-        for (String attribute : this.byteArraysK2s.keySet()) {
-            this.K2s.put(attribute, pairing.getG1().newElementFromBytes(this.byteArraysK2s.get(attribute)).getImmutable());
-            this.K3s.put(attribute, pairing.getG1().newElementFromBytes(this.byteArraysK3s.get(attribute)).getImmutable());
+        this.Sigma = pairing.getG1().newElementFromBytes(this.byteArraySigma);
+        this.UAK2 = pairing.getG1().newElementFromBytes(this.byteArrayUAK2);
+        this.D1p = pairing.getG1().newElementFromBytes(this.byteArrayD1p);
+        this.D2 = pairing.getG1().newElementFromBytes(this.byteArrayD2);
+        this.D3 = pairing.getG1().newElementFromBytes(this.byteArrayD3);
+        this.UAK1 = new HashMap<String, Element>();
+        this.D1 = new HashMap<String, Element>();
+        for (String attribute : this.byteArraysUAK1.keySet()) {
+            this.UAK1.put(attribute, pairing.getG1().newElementFromBytes(this.byteArraysUAK1.get(attribute)).getImmutable());
+            this.D1.put(attribute, pairing.getG1().newElementFromBytes(this.byteArraysD1.get(attribute)).getImmutable());
         }
     }
 }
