@@ -19,13 +19,17 @@ import org.bouncycastle.crypto.InvalidCipherTextException;
 import java.util.Map;
 
 /**
+ * Edited by ENY 
+ * 
+ * Reference:
+ *
  * Created by Weiran Liu on 2016/11/29.
  *
- * Rouselakis-Waters CP-ABE decryption generator.
+ * Rouselakis-Waters CP-ABE public key / master secret key generator.
  */
 public class CPABERC24DecryptionGenerator implements PairingDecryptionGenerator, PairingDecapsulationGenerator {
     protected CPABEDecryptionGenerationParameter parameter;
-    protected Element sessionKey;
+    protected Element Emp;
 
     public void init(CipherParameters parameter) {
         this.parameter = (CPABEDecryptionGenerationParameter) parameter;
@@ -42,19 +46,19 @@ public class CPABERC24DecryptionGenerator implements PairingDecryptionGenerator,
                     = accessControlEngine.generateAccessControl(this.parameter.getAccessPolicy(), this.parameter.getRhos());
             Map<String, Element> omegaElementsMap = accessControlEngine.reconstructOmegas(pairing, secretKeyParameter.getAttributes(), accessControlParameter);
 
-            this.sessionKey = pairing.pairing(ciphertextParameter.getC0(), secretKeyParameter.getK0());
+            this.Emp = pairing.pairing(ciphertextParameter.getEs(), secretKeyParameter.getD2());
             Element A = pairing.getGT().newOneElement().getImmutable();
             for (String attribute : omegaElementsMap.keySet()) {
-                Element C1 = ciphertextParameter.getC1sAt(attribute);
-                Element K1 = secretKeyParameter.getK1();
-                Element C2 = ciphertextParameter.getC2sAt(attribute);
-                Element K2 = secretKeyParameter.getK2sAt(attribute);
-                Element C3 = ciphertextParameter.getC3sAt(attribute);
-                Element K3 = secretKeyParameter.getK3sAt(attribute);
+                Element E1 = ciphertextParameter.getE1At(attribute);
+                Element D3 = secretKeyParameter.getD3();
+                Element E2 = ciphertextParameter.getE2At(attribute);
+                Element D1 = secretKeyParameter.getD1At(attribute);
                 Element lambda = omegaElementsMap.get(attribute);
-                A = A.mul(pairing.pairing(C1, K1).mul(pairing.pairing(C2, K2)).mul(pairing.pairing(C3, K3)).powZn(lambda)).getImmutable();
+                A = A.mul(pairing.pairing(D3, E1).mul(pairing.pairing(D1, E2)).powZn(lambda)).getImmutable();
             }
-            sessionKey = sessionKey.div(A).getImmutable();
+            Emp = Emp.div(A).getImmutable();
+            //one server skip mul
+            Emp = Emp.powZn(secretKeyParameter.getSigma()).getImmutable();
         } catch (UnsatisfiedAccessControlException e) {
             throw new InvalidCipherTextException("Attributes associated with the ciphertext do not satisfy access policy associated with the secret key.");
         }
@@ -63,11 +67,11 @@ public class CPABERC24DecryptionGenerator implements PairingDecryptionGenerator,
     public Element recoverMessage() throws InvalidCipherTextException {
         computeDecapsulation();
         CPABERC24CiphertextSerParameter ciphertextParameter = (CPABERC24CiphertextSerParameter) this.parameter.getCiphertextParameter();
-            return ciphertextParameter.getC().div(sessionKey).getImmutable();
+            return ciphertextParameter.getEm().div(Emp).getImmutable();
     }
 
     public byte[] recoverKey() throws InvalidCipherTextException {
         computeDecapsulation();
-        return this.sessionKey.toBytes();
+        return this.Emp.toBytes();
     }
 }

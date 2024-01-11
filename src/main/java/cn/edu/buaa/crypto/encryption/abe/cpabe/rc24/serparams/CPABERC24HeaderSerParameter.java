@@ -12,67 +12,91 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Edited by ENY 
+ * 
+ * Reference:
+ *
  * Created by Weiran Liu on 2016/11/29.
  *
- * Rouselakis-Waters CP-ABE header parameter.
+ * Rouselakis-Waters CP-ABE public key / master secret key generator.
  */
 public class CPABERC24HeaderSerParameter extends PairingCipherSerParameter {
     protected final String[] rhos;
-    protected transient Element C0;
-    protected final byte[] byteArrayC0;
+    protected transient Element Es;
+    protected final byte[] byteArrayEs;
 
-    protected transient Map<String, Element> C1s;
-    private final byte[][] byteArraysC1s;
+    protected transient Element Ev;
+    protected final byte[] byteArrayEv;
 
-    protected transient Map<String, Element> C2s;
-    private final byte[][] byteArraysC2s;
+    protected transient Map<String, Element> E1;
+    private final byte[][] byteArraysE1;
 
-    protected transient Map<String, Element> C3s;
-    private final byte[][] byteArraysC3s;
+    protected transient Map<String, Element> E2;
+    private final byte[][] byteArraysE2;
+
+    protected transient Map<String, Element> E3;
+    private final byte[][] byteArraysE3;
+
+    protected transient Map<String, Element> E4;
+    private final byte[][] byteArraysE4;
 
     public CPABERC24HeaderSerParameter(PairingParameters pairingParameters, Element Ev,
                                        Element Es, Map<String, Element> E1, Map<String, Element> E2, Map<String, Element> E3, Map<String, Element> E4) {
         super(pairingParameters);
 
-        this.rhos = C1s.keySet().toArray(new String[1]);
-        this.C0 = C0.getImmutable();
-        this.byteArrayC0 = this.C0.toBytes();
+        this.rhos = E1.keySet().toArray(new String[1]);
+        this.Es = Es.getImmutable();
+        this.byteArrayEs = this.Es.toBytes();
+        this.Ev = Ev.getImmutable();
+        this.byteArrayEv = this.Ev.toBytes();
 
-        this.C1s = new HashMap<String, Element>();
-        this.byteArraysC1s = new byte[this.rhos.length][];
-        this.C2s = new HashMap<String, Element>();
-        this.byteArraysC2s = new byte[this.rhos.length][];
-        this.C3s = new HashMap<String, Element>();
-        this.byteArraysC3s = new byte[this.rhos.length][];
+        this.E1 = new HashMap<String, Element>();
+        this.byteArraysE1 = new byte[this.rhos.length][];
+        this.E2 = new HashMap<String, Element>();
+        this.byteArraysE2 = new byte[this.rhos.length][];
+        this.E3 = new HashMap<String, Element>();
+        this.byteArraysE3 = new byte[this.rhos.length][];
+        this.E4 = new HashMap<String, Element>();
+        this.byteArraysE4 = new byte[this.rhos.length][];
 
         for (int i = 0; i < this.rhos.length; i++) {
-            Element C1 = C1s.get(this.rhos[i]).duplicate().getImmutable();
-            this.C1s.put(this.rhos[i], C1);
-            this.byteArraysC1s[i] = C1.toBytes();
+            Element E1p = E1.get(this.rhos[i]).duplicate().getImmutable();
+            this.E1.put(this.rhos[i], E1p);
+            this.byteArraysE1[i] = E1p.toBytes();
 
-            Element C2 = C2s.get(this.rhos[i]).duplicate().getImmutable();
-            this.C2s.put(this.rhos[i], C2);
-            this.byteArraysC2s[i] = C2.toBytes();
+            Element E2p = E2.get(this.rhos[i]).duplicate().getImmutable();
+            this.E2.put(this.rhos[i], E2p);
+            this.byteArraysE2[i] = E2p.toBytes();
 
-            Element C3 = C3s.get(this.rhos[i]).duplicate().getImmutable();
-            this.C3s.put(this.rhos[i], C3);
-            this.byteArraysC3s[i] = C3.toBytes();
+            Element E3p = E3.get(this.rhos[i]).duplicate().getImmutable();
+            this.E3.put(this.rhos[i], E3p);
+            this.byteArraysE3[i] = E3p.toBytes();
+                       
+            Element E4p = E4.get(this.rhos[i]).duplicate().getImmutable();
+            this.E4.put(this.rhos[i], E4p);
+            this.byteArraysE3[i] = E4p.toBytes();
         }
     }
 
-    public Element getC0() { return this.C0.duplicate(); }
+    public Element getEs() { return this.Es.duplicate(); }
 
-    public Map<String, Element> getC1s() { return this.C1s; }
+    public Element getEv() { return this.Ev.duplicate(); }
 
-    public Element getC1sAt(String rho) { return this.C1s.get(rho).duplicate(); }
+    public Map<String, Element> getE1() { return this.E1; }
 
-    public Map<String, Element> getC2s() { return this.C2s; }
+    public Element getE1At(String rho) { return this.E1.get(rho).duplicate(); }
 
-    public Element getC2sAt(String rho) { return this.C2s.get(rho).duplicate(); }
+    public Map<String, Element> getE2() { return this.E2; }
 
-    public Map<String, Element> getC3s() { return this.C3s; }
+    public Element getE2At(String rho) { return this.E2.get(rho).duplicate(); }
 
-    public Element getC3sAt(String rho) { return this.C3s.get(rho).duplicate(); }
+    public Map<String, Element> getE3() { return this.E3; }
+
+    public Element getE3At(String rho) { return this.E3.get(rho).duplicate(); }
+
+    public Map<String, Element> getE4() { return this.E4; }
+
+    public Element getE4At(String rho) { return this.E4.get(rho).duplicate(); }
 
     @Override
     public boolean equals(Object anObject) {
@@ -81,32 +105,46 @@ public class CPABERC24HeaderSerParameter extends PairingCipherSerParameter {
         }
         if (anObject instanceof CPABERC24HeaderSerParameter) {
             CPABERC24HeaderSerParameter that = (CPABERC24HeaderSerParameter)anObject;
-            //Compare C0
-            if (!PairingUtils.isEqualElement(this.C0, that.C0)) {
+            //Compare Es
+            if (!PairingUtils.isEqualElement(this.Es, that.Es)) {
                 return false;
             }
-            if (!Arrays.equals(this.byteArrayC0, that.byteArrayC0)) {
+            if (!Arrays.equals(this.byteArrayEs, that.byteArrayEs)) {
                 return false;
             }
-            //Compare C1s
-            if (!this.C1s.equals(that.C1s)) {
+            //Compare Ev
+            if (!PairingUtils.isEqualElement(this.Ev, that.Ev)) {
                 return false;
             }
-            if (!PairingUtils.isEqualByteArrays(this.byteArraysC1s, that.byteArraysC1s)) {
+            if (!Arrays.equals(this.byteArrayEv, that.byteArrayEv)) {
                 return false;
             }
-            //Compare C2s
-            if (!this.C2s.equals(that.C2s)) {
+            //Compare E1
+            if (!this.E1.equals(that.E1)) {
                 return false;
             }
-            if (!PairingUtils.isEqualByteArrays(this.byteArraysC2s, that.byteArraysC2s)) {
+            if (!PairingUtils.isEqualByteArrays(this.byteArraysE1, that.byteArraysE1)) {
                 return false;
             }
-            //Compare C3s
-            if (!this.C3s.equals(that.C3s)) {
+            //Compare E2
+            if (!this.E2.equals(that.E2)) {
                 return false;
             }
-            if (!PairingUtils.isEqualByteArrays(this.byteArraysC3s, that.byteArraysC3s)) {
+            if (!PairingUtils.isEqualByteArrays(this.byteArraysE2, that.byteArraysE2)) {
+                return false;
+            }
+            //Compare E3
+            if (!this.E3.equals(that.E3)) {
+                return false;
+            }
+            if (!PairingUtils.isEqualByteArrays(this.byteArraysE3, that.byteArraysE3)) {
+                return false;
+            }
+            //Compare E4
+            if (!this.E4.equals(that.E4)) {
+                return false;
+            }
+            if (!PairingUtils.isEqualByteArrays(this.byteArraysE4, that.byteArraysE4)) {
                 return false;
             }
             //Compare Pairing Parameters
@@ -119,14 +157,17 @@ public class CPABERC24HeaderSerParameter extends PairingCipherSerParameter {
             throws java.io.IOException, ClassNotFoundException {
         objectInputStream.defaultReadObject();
         Pairing pairing = PairingFactory.getPairing(this.getParameters());
-        this.C0 = pairing.getG1().newElementFromBytes(this.byteArrayC0).getImmutable();
-        this.C1s = new HashMap<String, Element>();
-        this.C2s = new HashMap<String, Element>();
-        this.C3s = new HashMap<String, Element>();
+        this.Es = pairing.getG1().newElementFromBytes(this.byteArrayEs).getImmutable();
+        this.Ev = pairing.getG1().newElementFromBytes(this.byteArrayEs).getImmutable();
+        this.E1 = new HashMap<String, Element>();
+        this.E2 = new HashMap<String, Element>();
+        this.E3 = new HashMap<String, Element>();
+        this.E4 = new HashMap<String, Element>();
         for (int i = 0; i < this.rhos.length; i++) {
-            this.C1s.put(this.rhos[i], pairing.getG1().newElementFromBytes(this.byteArraysC1s[i]).getImmutable());
-            this.C2s.put(this.rhos[i], pairing.getG1().newElementFromBytes(this.byteArraysC2s[i]).getImmutable());
-            this.C3s.put(this.rhos[i], pairing.getG1().newElementFromBytes(this.byteArraysC3s[i]).getImmutable());
+            this.E1.put(this.rhos[i], pairing.getG1().newElementFromBytes(this.byteArraysE1[i]).getImmutable());
+            this.E2.put(this.rhos[i], pairing.getG1().newElementFromBytes(this.byteArraysE2[i]).getImmutable());
+            this.E3.put(this.rhos[i], pairing.getG1().newElementFromBytes(this.byteArraysE3[i]).getImmutable());
+            this.E4.put(this.rhos[i], pairing.getG1().newElementFromBytes(this.byteArraysE4[i]).getImmutable());
         }
     }
 }

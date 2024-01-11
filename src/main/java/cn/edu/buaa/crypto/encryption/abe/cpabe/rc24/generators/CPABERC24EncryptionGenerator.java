@@ -21,9 +21,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Edited by ENY 
+ * 
+ * Reference:
+ *
  * Created by Weiran Liu on 2016/11/29.
  *
- * Rouselakis-Waters CP-ABE encryption generator.
+ * Rouselakis-Waters CP-ABE public key / master secret key generator.
  */
 public class CPABERC24EncryptionGenerator implements PairingEncryptionGenerator, PairingEncapsulationPairGenerator {
     private CPABERC24PublicKeySerParameter publicKeyParameter;
@@ -54,7 +58,7 @@ public class CPABERC24EncryptionGenerator implements PairingEncryptionGenerator,
         this.Es = publicKeyParameter.getG().powZn(s).getImmutable();
 
         Map<String, Element> lambdas = accessControlEngine.secretSharing(pairing, s, accessControlParameter);
-        Map<String, Element> omegas = accessControlEngine.secretSharing(pairing, pairing.getZr().newElement(0), accessControlParameter);
+        Map<String, Element> omegas = accessControlEngine.secretSharing(pairing, pairing.getZr().newZeroElement(), accessControlParameter);
         this.E1 = new HashMap<String, Element>();
         this.E2 = new HashMap<String, Element>();
         this.E3 = new HashMap<String, Element>();
@@ -82,7 +86,7 @@ public class CPABERC24EncryptionGenerator implements PairingEncryptionGenerator,
 
         Pairing pairing = PairingFactory.getPairing(publicKeyParameter.getParameters());
         Element Em = publicKeyParameter.getEggAlpha().powZn(s).mul(this.parameter.getMessage()).getImmutable();
-        Element Ev = CPABERC24Hash.GthashToZp(Em,pairing);
+        Ev = CPABERC24Hash.GthashToZp(Em,pairing);
         return new CPABERC24CiphertextSerParameter(publicKeyParameter.getParameters(), Em, Ev, Es, E1, E2, E3, E4);
     }
     // ?

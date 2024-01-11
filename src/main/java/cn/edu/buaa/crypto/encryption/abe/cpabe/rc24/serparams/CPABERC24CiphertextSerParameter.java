@@ -11,23 +11,27 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Edited by ENY 
+ * 
+ * Reference:
+ *
  * Created by Weiran Liu on 2016/11/29.
  *
- * Rouselakis-Waters CP-ABE ciphertext parameter.
+ * Rouselakis-Waters CP-ABE public key / master secret key generator.
  */
 public class CPABERC24CiphertextSerParameter extends CPABERC24HeaderSerParameter {
-    private transient Element C;
-    private final byte[] byteArrayC;
+    private transient Element Em;
+    private final byte[] byteArrayEm;
 
     public CPABERC24CiphertextSerParameter(PairingParameters pairingParameters, Element Em, Element Ev,
             Element Es, Map<String, Element> E1, Map<String, Element> E2, Map<String, Element> E3, Map<String, Element> E4) {
         super(pairingParameters, Ev, Es, E1, E2, E3, E4);
 
-        this.C = C.getImmutable();
-        this.byteArrayC = this.C.toBytes();
+        this.Em = Em.getImmutable();
+        this.byteArrayEm = this.Em.toBytes();
     }
 
-    public Element getC() { return this.C.duplicate(); }
+    public Element getEm() { return this.Em.duplicate(); }
 
     @Override
     public boolean equals(Object anObject) {
@@ -36,8 +40,8 @@ public class CPABERC24CiphertextSerParameter extends CPABERC24HeaderSerParameter
         }
         if (anObject instanceof CPABERC24CiphertextSerParameter) {
             CPABERC24CiphertextSerParameter that = (CPABERC24CiphertextSerParameter) anObject;
-            return PairingUtils.isEqualElement(this.C, that.C)
-                    && Arrays.equals(this.byteArrayC, that.byteArrayC)
+            return PairingUtils.isEqualElement(this.Em, that.Em)
+                    && Arrays.equals(this.byteArrayEm, that.byteArrayEm)
                     && super.equals(anObject);
         }
         return false;
@@ -47,6 +51,6 @@ public class CPABERC24CiphertextSerParameter extends CPABERC24HeaderSerParameter
             throws java.io.IOException, ClassNotFoundException {
         objectInputStream.defaultReadObject();
         Pairing pairing = PairingFactory.getPairing(this.getParameters());
-        this.C = pairing.getGT().newElementFromBytes(this.byteArrayC).getImmutable();
+        this.Em = pairing.getGT().newElementFromBytes(this.byteArrayEm).getImmutable();
     }
 }

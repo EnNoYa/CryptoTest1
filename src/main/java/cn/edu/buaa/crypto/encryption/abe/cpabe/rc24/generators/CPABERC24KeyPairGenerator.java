@@ -28,15 +28,13 @@ import org.bouncycastle.crypto.KeyGenerationParameters;
  */
 public class CPABERC24KeyPairGenerator implements PairingKeyPairGenerator {
     protected CPABEKeyPairGenerationParameter parameters;
-    protected CPABESecretKeyGenerationParameter parameter;
     // CASetup 
     public void init(KeyGenerationParameters keyGenerationParameter) {
         this.parameters = (CPABEKeyPairGenerationParameter) keyGenerationParameter;
-        this.parameter = (CPABESecretKeyGenerationParameter) keyGenerationParameter;
     }
 
     public PairingKeySerPair generateKeyPair() {
-        String[] attributes = this.parameter.getAttributes();
+        String[] attributes = this.parameters.getAttributes();
         Pairing pairing = PairingFactory.getPairing(this.parameters.getPairingParameters());
 
         Element alpha = pairing.getZr().newRandomElement().getImmutable();

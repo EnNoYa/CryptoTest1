@@ -38,10 +38,18 @@ public class CPABERC24Engine extends CPABEEngine {
     private CPABERC24Engine() {
         super(SCHEME_NAME, ProveSecModel.Standard, PayloadSecLevel.CPA, PredicateSecLevel.NON_ANON);
     }
-
+   
     public PairingKeySerPair setup(PairingParameters pairingParameters, int maxAttributesNum) {
         CPABERC24KeyPairGenerator keyPairGenerator = new CPABERC24KeyPairGenerator();
         keyPairGenerator.init(new CPABEKeyPairGenerationParameter(pairingParameters));
+
+        return keyPairGenerator.generateKeyPair();
+    }
+
+    // we use this
+    public PairingKeySerPair setup(PairingParameters pairingParameters, int maxAttributesNum, String[] attributes) {
+        CPABERC24KeyPairGenerator keyPairGenerator = new CPABERC24KeyPairGenerator();
+        keyPairGenerator.init(new CPABEKeyPairGenerationParameter(pairingParameters, attributes));
 
         return keyPairGenerator.generateKeyPair();
     }

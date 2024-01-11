@@ -41,7 +41,6 @@ public abstract class CPABEEngine extends Engine {
      * @return public key / master secret key pair of the scheme
      */
     public abstract PairingKeySerPair setup(PairingParameters pairingParameters, int maxAttributesNum);
-
     /**
      * Secret Key Generation Algorithm for CP-ABE
      * @param publicKey public key

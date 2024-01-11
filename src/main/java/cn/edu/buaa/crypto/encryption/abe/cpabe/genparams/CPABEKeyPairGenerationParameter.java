@@ -2,6 +2,7 @@ package cn.edu.buaa.crypto.encryption.abe.cpabe.genparams;
 
 import cn.edu.buaa.crypto.algebra.generators.AsymmetricKeySerPairGenerator;
 import cn.edu.buaa.crypto.algebra.genparams.PairingKeyPairGenerationParameter;
+import cn.edu.buaa.crypto.utils.PairingUtils;
 import it.unisa.dia.gas.jpbc.PairingParameters;
 import org.bouncycastle.crypto.KeyGenerationParameters;
 
@@ -16,11 +17,20 @@ public class CPABEKeyPairGenerationParameter extends PairingKeyPairGenerationPar
     private int maxAttributesNum;
     private AsymmetricKeySerPairGenerator chameleonHashKeyPairGenerator;
     private KeyGenerationParameters chameleonHashKeyGenerationParameter;
+    private String[] attributes;
+
+    public CPABEKeyPairGenerationParameter(PairingParameters pairingParameters, String[] attributes) {
+        super(pairingParameters);
+        this.maxAttributesNum = -1;
+        this.attributes = PairingUtils.removeDuplicates(attributes);
+    }
 
     public CPABEKeyPairGenerationParameter(PairingParameters pairingParameters) {
         super(pairingParameters);
         this.maxAttributesNum = -1;
     }
+
+    public String[] getAttributes() { return this.attributes; }
 
     public CPABEKeyPairGenerationParameter(PairingParameters pairingParameters, int maxAttributesNum) {
         super(pairingParameters);
