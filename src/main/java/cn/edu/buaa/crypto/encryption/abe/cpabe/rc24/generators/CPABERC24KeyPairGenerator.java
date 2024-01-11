@@ -64,19 +64,20 @@ public class CPABERC24KeyPairGenerator implements PairingKeyPairGenerator {
         Map<String, Element> gHg = new HashMap<String, Element>();
         Element eggH = pairing.pairing(g, g).powZn(hashAID.div(ct)).getImmutable();
         Element gH = g.powZn(hashAID.div(ct)).getImmutable();
+        if(attributes!=null){
+            for (String attribute : attributes) {
+                beta = pairing.getZr().newRandomElement().getImmutable();
+                gamma = pairing.getZr().newRandomElement().getImmutable();
+                h = pairing.getZr().newRandomElement().getImmutable();
 
-        for (String attribute : attributes) {
-            beta = pairing.getZr().newRandomElement().getImmutable();
-            gamma = pairing.getZr().newRandomElement().getImmutable();
-            h = pairing.getZr().newRandomElement().getImmutable();
+                hAb.put(attribute, hashAID.mul(beta).getImmutable());
+                hAh.put(attribute, hashAID.mul(h).getImmutable());
+                hAg.put(attribute, hashAID.mul(gamma).getImmutable());
 
-            hAb.put(attribute, hashAID.mul(beta).getImmutable());
-            hAh.put(attribute, hashAID.mul(h).getImmutable());
-            hAg.put(attribute, hashAID.mul(gamma).getImmutable());
-
-            eggHb.put(attribute, pairing.pairing(g, g).powZn(hAb.get(attribute).div(ct)).getImmutable());
-            gHh.put(attribute, g.powZn(hAh.get(attribute).div(ct)).getImmutable());
-            gHg.put(attribute, g.powZn(hAg.get(attribute).div(ct)).getImmutable());
+                eggHb.put(attribute, pairing.pairing(g, g).powZn(hAb.get(attribute).div(ct)).getImmutable());
+                gHh.put(attribute, g.powZn(hAh.get(attribute).div(ct)).getImmutable());
+                gHg.put(attribute, g.powZn(hAg.get(attribute).div(ct)).getImmutable());
+            }
         }
         
         return new PairingKeySerPair(

@@ -74,7 +74,7 @@ public class CPABERC24HeaderSerParameter extends PairingCipherSerParameter {
                        
             Element E4p = E4.get(this.rhos[i]).duplicate().getImmutable();
             this.E4.put(this.rhos[i], E4p);
-            this.byteArraysE3[i] = E4p.toBytes();
+            this.byteArraysE4[i] = E4p.toBytes();
         }
     }
 
@@ -158,7 +158,7 @@ public class CPABERC24HeaderSerParameter extends PairingCipherSerParameter {
         objectInputStream.defaultReadObject();
         Pairing pairing = PairingFactory.getPairing(this.getParameters());
         this.Es = pairing.getG1().newElementFromBytes(this.byteArrayEs).getImmutable();
-        this.Ev = pairing.getG1().newElementFromBytes(this.byteArrayEs).getImmutable();
+        this.Ev = pairing.getZr().newElementFromBytes(this.byteArrayEv).getImmutable();
         this.E1 = new HashMap<String, Element>();
         this.E2 = new HashMap<String, Element>();
         this.E3 = new HashMap<String, Element>();
@@ -166,7 +166,7 @@ public class CPABERC24HeaderSerParameter extends PairingCipherSerParameter {
         for (int i = 0; i < this.rhos.length; i++) {
             this.E1.put(this.rhos[i], pairing.getG1().newElementFromBytes(this.byteArraysE1[i]).getImmutable());
             this.E2.put(this.rhos[i], pairing.getG1().newElementFromBytes(this.byteArraysE2[i]).getImmutable());
-            this.E3.put(this.rhos[i], pairing.getG1().newElementFromBytes(this.byteArraysE3[i]).getImmutable());
+            this.E3.put(this.rhos[i], pairing.getGT().newElementFromBytes(this.byteArraysE3[i]).getImmutable());
             this.E4.put(this.rhos[i], pairing.getG1().newElementFromBytes(this.byteArraysE4[i]).getImmutable());
         }
     }

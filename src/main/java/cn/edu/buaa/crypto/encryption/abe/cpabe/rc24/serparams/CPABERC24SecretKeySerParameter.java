@@ -64,7 +64,9 @@ public class CPABERC24SecretKeySerParameter extends PairingKeySerParameter {
 
         for (String attribute : UAK1.keySet()) {
             this.UAK1.put(attribute, UAK1.get(attribute).duplicate().getImmutable());
-            this.byteArraysUAK1.put(attribute, UAK1.get(attribute).duplicate().getImmutable().toBytes());
+            byte[] temp=UAK1.get(attribute).duplicate().getImmutable().toBytes();
+            // this.byteArraysUAK1.put(attribute, UAK1.get(attribute).duplicate().getImmutable().toBytes());
+            this.byteArraysUAK1.put(attribute, temp);
             this.D1.put(attribute, D1.get(attribute).duplicate().getImmutable());
             this.byteArraysD1.put(attribute, D1.get(attribute).duplicate().getImmutable().toBytes());
         }
@@ -156,11 +158,11 @@ public class CPABERC24SecretKeySerParameter extends PairingKeySerParameter {
             throws java.io.IOException, ClassNotFoundException {
         objectInputStream.defaultReadObject();
         Pairing pairing = PairingFactory.getPairing(this.getParameters());
-        this.Sigma = pairing.getG1().newElementFromBytes(this.byteArraySigma);
-        this.UAK2 = pairing.getG1().newElementFromBytes(this.byteArrayUAK2);
-        this.D1p = pairing.getG1().newElementFromBytes(this.byteArrayD1p);
-        this.D2 = pairing.getG1().newElementFromBytes(this.byteArrayD2);
-        this.D3 = pairing.getG1().newElementFromBytes(this.byteArrayD3);
+        this.Sigma = pairing.getZr().newElementFromBytes(this.byteArraySigma).getImmutable();
+        this.UAK2 = pairing.getG1().newElementFromBytes(this.byteArrayUAK2).getImmutable();
+        this.D1p = pairing.getG1().newElementFromBytes(this.byteArrayD1p).getImmutable();
+        this.D2 = pairing.getG1().newElementFromBytes(this.byteArrayD2).getImmutable();
+        this.D3 = pairing.getG1().newElementFromBytes(this.byteArrayD3).getImmutable();
         this.UAK1 = new HashMap<String, Element>();
         this.D1 = new HashMap<String, Element>();
         for (String attribute : this.byteArraysUAK1.keySet()) {

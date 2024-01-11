@@ -184,6 +184,8 @@ public class CPABEEngineJUnitTest extends TestCase {
             PairingKeySerParameter publicKey = keyPair.getPublic();
             byte[] byteArrayPublicKey = TestUtils.SerCipherParameter(publicKey);
             CipherParameters anPublicKey = TestUtils.deserCipherParameters(byteArrayPublicKey);
+            System.out.println(publicKey.toString());
+            System.out.println(anPublicKey.toString());
             Assert.assertEquals(publicKey, anPublicKey);
             publicKey = (PairingKeySerParameter) anPublicKey;
 

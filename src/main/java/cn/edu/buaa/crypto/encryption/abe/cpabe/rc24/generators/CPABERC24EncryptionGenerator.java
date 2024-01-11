@@ -54,7 +54,7 @@ public class CPABERC24EncryptionGenerator implements PairingEncryptionGenerator,
         this.accessControlParameter = accessControlEngine.generateAccessControl(accessPolicy, rhos);
 
         Pairing pairing = PairingFactory.getPairing(publicKeyParameter.getParameters());
-        this.s = pairing.getG1().newRandomElement().getImmutable();
+        this.s = pairing.getZr().newRandomElement().getImmutable();
         this.Es = publicKeyParameter.getG().powZn(s).getImmutable();
 
         Map<String, Element> lambdas = accessControlEngine.secretSharing(pairing, s, accessControlParameter);
@@ -66,12 +66,12 @@ public class CPABERC24EncryptionGenerator implements PairingEncryptionGenerator,
         for (String rho : lambdas.keySet()) {
             // Element elementRho = PairingUtils.MapStringToGroup(pairing, rho, PairingUtils.PairingGroupType.Zr);
             this.zeta = pairing.getZr().newRandomElement().getImmutable();
-            Element E1s = publicKeyParameter.getGHh().get(rho).negate().mul(zeta).getImmutable();
+            Element E1s = publicKeyParameter.getGHh().get(rho).negate().powZn(zeta).getImmutable();
             E1s = E1s.powZn(publicKeyParameter.getCt()).getImmutable();
             E1s = E1s.mul(publicKeyParameter.getG().powZn(lambdas.get(rho))).getImmutable();
-            Element E3s = publicKeyParameter.getEggHb().get(rho).mul(zeta).getImmutable();
+            Element E3s = publicKeyParameter.getEggHb().get(rho).powZn(zeta).getImmutable();
             E3s = E3s.powZn(publicKeyParameter.getCt()).getImmutable();
-            Element E4s = publicKeyParameter.getGHg().get(rho).mul(zeta).getImmutable();
+            Element E4s = publicKeyParameter.getGHg().get(rho).powZn(zeta).getImmutable();
             E4s = E4s.powZn(publicKeyParameter.getCt()).getImmutable();
             E4s = E4s.mul(publicKeyParameter.getG().powZn(omegas.get(rho))).getImmutable();
             E1.put(rho, E1s);

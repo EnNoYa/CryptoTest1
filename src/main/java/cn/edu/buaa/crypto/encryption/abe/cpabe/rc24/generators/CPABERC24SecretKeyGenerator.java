@@ -48,8 +48,8 @@ public class CPABERC24SecretKeyGenerator implements PairingKeyParameterGenerator
         Element D3 = publicKeyParameter.getG().powZn(pairing.getZr().newOneElement().div(Sigma)).getImmutable();
 
         for (String attribute : attributes) {
-            UAK1.put(attribute, (publicKeyParameter.getG().powZn(masterSecretKeyParameter.getHAb().get(attribute))).mul(CPABERC24Hash.ShashToG("UE01",pairing).powZn(masterSecretKeyParameter.getHAg().get(attribute))).getImmutable());
-            D1.put(attribute, publicKeyParameter.getG().powZn(masterSecretKeyParameter.getHAh().get(attribute).div(Sigma)).getImmutable());
+            UAK1.put(attribute, (publicKeyParameter.getG().powZn(masterSecretKeyParameter.getHAbAt(attribute))).mul(CPABERC24Hash.ShashToG("UE01",pairing).powZn(masterSecretKeyParameter.getHAgAt(attribute))).getImmutable());
+            D1.put(attribute, publicKeyParameter.getG().powZn(masterSecretKeyParameter.getHAhAt(attribute).div(Sigma)).getImmutable());
         }
         return new CPABERC24SecretKeySerParameter(publicKeyParameter.getParameters(), Sigma, UAK1, UAK2, D1, D1p, D2, D3);
     }

@@ -238,6 +238,7 @@ public class CPABERC24PublicKeySerParameter extends PairingKeySerParameter {
         this.gHg = new HashMap<String, Element>();
         // this.eggH = new HashMap<String, Element>();
         // this.gH = new HashMap<String, Element>();
+        this.ct = pairing.getZr().newElementFromBytes(this.byteArrayCt).getImmutable();
         for (String attribute : this.byteArraysEggHb.keySet()) {
             this.eggHb.put(attribute, pairing.getGT().newElementFromBytes(this.byteArraysEggHb.get(attribute)).getImmutable());
             this.gHh.put(attribute, pairing.getG1().newElementFromBytes(this.byteArraysGHh.get(attribute)).getImmutable());
