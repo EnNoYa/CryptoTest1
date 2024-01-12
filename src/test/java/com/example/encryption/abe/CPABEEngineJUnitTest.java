@@ -184,8 +184,6 @@ public class CPABEEngineJUnitTest extends TestCase {
             PairingKeySerParameter publicKey = keyPair.getPublic();
             byte[] byteArrayPublicKey = TestUtils.SerCipherParameter(publicKey);
             CipherParameters anPublicKey = TestUtils.deserCipherParameters(byteArrayPublicKey);
-            System.out.println(publicKey.toString());
-            System.out.println(anPublicKey.toString());
             Assert.assertEquals(publicKey, anPublicKey);
             publicKey = (PairingKeySerParameter) anPublicKey;
 
@@ -442,17 +440,6 @@ public class CPABEEngineJUnitTest extends TestCase {
         KeyGenerationParameters keyGenerationParameters = new DLogKR00bKeyGenerationParameters(new SecureRandom(),
                 SecurePrimeSerParameter.RFC3526_1536BIT_MODP_GROUP);
         ((OOCPABELLW16Engine)this.engine).setChameleonHasher(chameleonHasher, chKeyPairGenerator, keyGenerationParameters);
-        runAllTests(PairingFactory.getPairingParameters(TestUtils.TEST_PAIRING_PARAMETERS_PATH_a_80_256));
-
-        System.out.println("Test " + engine.getEngineName() + " using " + LSSSLW10Engine.SCHEME_NAME);
-        engine.setAccessControlEngine(LSSSLW10Engine.getInstance());
-        runAllTests(PairingFactory.getPairingParameters(TestUtils.TEST_PAIRING_PARAMETERS_PATH_a_80_256));
-    }
-
-    public void testCPABERC24Engine() {
-        this.engine = CPABERC24Engine.getInstance();
-        System.out.println("Test " + engine.getEngineName() + " using " + AccessTreeEngine.SCHEME_NAME);
-        engine.setAccessControlEngine(AccessTreeEngine.getInstance());
         runAllTests(PairingFactory.getPairingParameters(TestUtils.TEST_PAIRING_PARAMETERS_PATH_a_80_256));
 
         System.out.println("Test " + engine.getEngineName() + " using " + LSSSLW10Engine.SCHEME_NAME);

@@ -10,6 +10,7 @@ import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.serparams.CPABERC24Ciphertex
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.serparams.CPABERC24HeaderSerParameter;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.serparams.CPABERC24PublicKeySerParameter;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.serparams.CPABERC24SecretKeySerParameter;
+import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.tools.CPABERC24Hash;
 import it.unisa.dia.gas.jpbc.Element;
 import it.unisa.dia.gas.jpbc.Pairing;
 import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
@@ -30,6 +31,7 @@ import java.util.Map;
 public class CPABERC24DecryptionGenerator implements PairingDecryptionGenerator, PairingDecapsulationGenerator {
     protected CPABEDecryptionGenerationParameter parameter;
     protected Element Emp;
+    protected Element Ev;
 
     public void init(CipherParameters parameter) {
         this.parameter = (CPABEDecryptionGenerationParameter) parameter;
@@ -56,9 +58,10 @@ public class CPABERC24DecryptionGenerator implements PairingDecryptionGenerator,
                 Element lambda = omegaElementsMap.get(attribute);
                 A = A.mul(pairing.pairing(D3, E1).mul(pairing.pairing(D1, E2)).powZn(lambda)).getImmutable();
             }
-            Emp = Emp.div(A).getImmutable();
+            this.Emp = this.Emp.div(A).getImmutable();
             //one server skip mul
-            Emp = Emp.powZn(secretKeyParameter.getSigma()).getImmutable();
+            this.Emp = this.Emp.powZn(secretKeyParameter.getSigma()).getImmutable();
+            this.Ev = CPABERC24Hash.GthashToZp(Emp,pairing);
         } catch (UnsatisfiedAccessControlException e) {
             throw new InvalidCipherTextException("Attributes associated with the ciphertext do not satisfy access policy associated with the secret key.");
         }
@@ -67,11 +70,11 @@ public class CPABERC24DecryptionGenerator implements PairingDecryptionGenerator,
     public Element recoverMessage() throws InvalidCipherTextException {
         computeDecapsulation();
         CPABERC24CiphertextSerParameter ciphertextParameter = (CPABERC24CiphertextSerParameter) this.parameter.getCiphertextParameter();
-            return ciphertextParameter.getEm().div(Emp).getImmutable();
+            return ciphertextParameter.getEm().div(this.Emp).getImmutable();
     }
 
     public byte[] recoverKey() throws InvalidCipherTextException {
         computeDecapsulation();
-        return this.Emp.toBytes();
+        return this.Ev.toBytes();
     }
 }
