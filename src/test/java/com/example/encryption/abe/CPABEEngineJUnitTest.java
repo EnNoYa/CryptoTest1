@@ -18,7 +18,6 @@ import cn.edu.buaa.crypto.encryption.abe.cpabe.hw14.OOCPABEHW14Engine;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.llw14.CPABELLW14Engine;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.llw16.OOCPABELLW16Engine;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rw13.CPABERW13Engine;
-import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.CPABERC24Engine;
 import com.example.TestUtils;
 import com.example.access.AccessPolicyExamples;
 import it.unisa.dia.gas.jpbc.Element;
