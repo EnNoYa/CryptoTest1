@@ -45,13 +45,66 @@ public class CPABERC24KeyPairGenerator implements PairingKeyPairGenerator {
         // only one type
         // Map<String, Element> t = new HashMap<String, Element>();
         // Map<String, Element> c_t = new HashMap<String, Element>();
+        Element ct = pairing.getZr().newRandomElement().getImmutable();
+
+        Element g = pairing.getG1().newRandomElement().getImmutable();
         Element t = pairing.getZr().newRandomElement().getImmutable();
+        Element gEta = g.powZn(eta).getImmutable();      
+        Element hashAID = CPABERC24Hash.ShashToZp("GN-001", pairing).powZn(t).getImmutable();
+
+        Map<String, Element> hAb = new HashMap<String, Element>();
+        Map<String, Element> hAh = new HashMap<String, Element>();
+        Map<String, Element> hAg = new HashMap<String, Element>();
+
+        Element eggAlpha = pairing.pairing(g, g).powZn(alpha).getImmutable();
+        Map<String, Element> eggHb = new HashMap<String, Element>();
+        Map<String, Element> gHh = new HashMap<String, Element>();
+        Map<String, Element> gHg = new HashMap<String, Element>();
+        Element eggH = pairing.pairing(g, g).powZn(hashAID.div(ct)).getImmutable();
+        Element gH = g.powZn(hashAID.div(ct)).getImmutable();
+        if(attributes!=null){
+            for (String attribute : attributes) {
+                beta = pairing.getZr().newRandomElement().getImmutable();
+                gamma = pairing.getZr().newRandomElement().getImmutable();
+                h = pairing.getZr().newRandomElement().getImmutable();
+
+                hAb.put(attribute, hashAID.mul(beta).getImmutable());
+                hAh.put(attribute, hashAID.mul(h).getImmutable());
+                hAg.put(attribute, hashAID.mul(gamma).getImmutable());
+
+                eggHb.put(attribute, pairing.pairing(g, g).powZn(hAb.get(attribute).div(ct)).getImmutable());
+                gHh.put(attribute, g.powZn(hAh.get(attribute).div(ct)).getImmutable());
+                gHg.put(attribute, g.powZn(hAg.get(attribute).div(ct)).getImmutable());
+            }
+        }
+        
+        return new PairingKeySerPair(
+                new CPABERC24PublicKeySerParameter(this.parameters.getPairingParameters(), g, gEta, eggAlpha, eggHb, gHh, gHg, eggH, gH, ct), //c_t not should be here
+                new CPABERC24MasterSecretKeySerParameter(this.parameters.getPairingParameters(), alpha, hAb, hAh, hAg, hashAID));
+    }
+
+    public static Element generateHashAID(String AID, Pairing pairing) {
+        Element t = pairing.getZr().newRandomElement().getImmutable();
+        return  CPABERC24Hash.ShashToZp(AID, pairing).powZn(t).getImmutable();               
+    }
+    
+    public PairingKeySerPair generateKeyDecentralPair(Element hashAID) {
+        String[] attributes = this.parameters.getAttributes();
+        Pairing pairing = PairingFactory.getPairing(this.parameters.getPairingParameters());
+
+        Element alpha = pairing.getZr().newRandomElement().getImmutable();
+        Element eta = pairing.getZr().newRandomElement().getImmutable();
+        Element beta ;
+        Element gamma ;
+        Element h ;
+        // only one type
+        // Map<String, Element> t = new HashMap<String, Element>();
+        // Map<String, Element> c_t = new HashMap<String, Element>();
         Element ct = pairing.getZr().newRandomElement().getImmutable();
 
         Element g = pairing.getG1().newRandomElement().getImmutable();
 
         Element gEta = g.powZn(eta).getImmutable();      
-        Element hashAID = CPABERC24Hash.ShashToZp("GN-001", pairing).powZn(t).getImmutable();   
 
         
         Map<String, Element> hAb = new HashMap<String, Element>();

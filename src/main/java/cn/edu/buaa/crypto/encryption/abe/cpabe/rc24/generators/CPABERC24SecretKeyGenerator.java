@@ -53,4 +53,25 @@ public class CPABERC24SecretKeyGenerator implements PairingKeyParameterGenerator
         }
         return new CPABERC24SecretKeySerParameter(publicKeyParameter.getParameters(), Sigma, UAK1, UAK2, D1, D1p, D2, D3);
     }
+
+    public PairingKeySerParameter generateExtraKey(Element Sigma) {
+        CPABERC24MasterSecretKeySerParameter masterSecretKeyParameter = (CPABERC24MasterSecretKeySerParameter)parameter.getMasterSecretKeyParameter();
+        CPABERC24PublicKeySerParameter publicKeyParameter = (CPABERC24PublicKeySerParameter)parameter.getPublicKeyParameter();
+
+        String[] attributes = this.parameter.getAttributes();
+        Pairing pairing = PairingFactory.getPairing(publicKeyParameter.getParameters());
+
+        Map<String, Element> UAK1 = new HashMap<String, Element>();
+        Element UAK2 = (publicKeyParameter.getG().powZn(masterSecretKeyParameter.getHashAID())).mul(CPABERC24Hash.ShashToG("UE01",pairing).powZn(masterSecretKeyParameter.getHashAID())).getImmutable();
+        Map<String, Element> D1 = new HashMap<String, Element>();
+        Element D1p = publicKeyParameter.getG().powZn(masterSecretKeyParameter.getHashAID().div(Sigma)).getImmutable();
+        Element D2 = (publicKeyParameter.getG().powZn(masterSecretKeyParameter.getAlpha()).mul(publicKeyParameter.getGEta())).powZn(pairing.getZr().newOneElement().div(Sigma)).getImmutable();
+        Element D3 = publicKeyParameter.getG().powZn(pairing.getZr().newOneElement().div(Sigma)).getImmutable();
+
+        for (String attribute : attributes) {
+            UAK1.put(attribute, (publicKeyParameter.getG().powZn(masterSecretKeyParameter.getHAbAt(attribute))).mul(CPABERC24Hash.ShashToG("UE01",pairing).powZn(masterSecretKeyParameter.getHAgAt(attribute))).getImmutable());
+            D1.put(attribute, publicKeyParameter.getG().powZn(masterSecretKeyParameter.getHAhAt(attribute).div(Sigma)).getImmutable());
+        }
+        return new CPABERC24SecretKeySerParameter(publicKeyParameter.getParameters(), Sigma, UAK1, UAK2, D1, D1p, D2, D3);
+    }
 }
