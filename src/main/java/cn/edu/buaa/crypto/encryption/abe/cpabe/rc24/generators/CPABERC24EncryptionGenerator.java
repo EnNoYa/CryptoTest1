@@ -84,10 +84,7 @@ public class CPABERC24EncryptionGenerator implements PairingEncryptionGenerator,
     }
     //  pre co final,   pre & final:same object
     protected void computePreEncapsulation() {
-        int[][] accessPolicy = this.parameter.getAccessPolicy();
         String[] rhos = this.parameter.getRhos(); //(A,p<---this) attr name
-        AccessControlEngine accessControlEngine = this.parameter.getAccessControlEngine();
-        this.accessControlParameter = accessControlEngine.generateAccessControl(accessPolicy, rhos);
 
         Pairing pairing = PairingFactory.getPairing(publicKeyParameter.getParameters());
         this.s = pairing.getZr().newRandomElement().getImmutable();
@@ -128,11 +125,14 @@ public class CPABERC24EncryptionGenerator implements PairingEncryptionGenerator,
             E4.put(rho, preCiphertextParameter.getE4At(rho).powZn(publicKeyParameter.getCt()));
         }
     }
-    protected void computeFinalEncapsulation(CPABERC24HeaderSerParameter preCiphertextParameter, CPABERC24HeaderSerParameter coCiphertextParameter) {
+    protected void computeFinalEncapsulation(CPABERC24HeaderSerParameter preCiphertextParameter, CPABERC24HeaderSerParameter coCiphertextParameter, Element s) {
+        int[][] accessPolicy = this.parameter.getAccessPolicy();
+        String[] rhos = this.parameter.getRhos(); //(A,p<---this) attr name
         AccessControlEngine accessControlEngine = this.parameter.getAccessControlEngine();
+        this.accessControlParameter = accessControlEngine.generateAccessControl(accessPolicy, rhos);
 
         Pairing pairing = PairingFactory.getPairing(publicKeyParameter.getParameters());
-        
+
         this.Es = preCiphertextParameter.getEs();
         this.Ev = preCiphertextParameter.getEv();
 
@@ -159,11 +159,22 @@ public class CPABERC24EncryptionGenerator implements PairingEncryptionGenerator,
         return new CPABERC24CiphertextSerParameter(publicKeyParameter.getParameters(), Em, Ev, Es, E1, E2, E3, E4);
     }
 
-    public PairingCipherSerParameter generatePreCiphertext() {
+    // preserve s
+    public class preCiphertextPack {
+        public final Element s;
+        public final CPABERC24CiphertextSerParameter preCiphertext;
+    
+        public preCiphertextPack(Element s, CPABERC24CiphertextSerParameter preCiphertext) {
+            this.s = s;
+            this.preCiphertext = preCiphertext;
+        }
+    }
+
+    public preCiphertextPack generatePreCiphertext() {
         computePreEncapsulation();
 
         Element Em = publicKeyParameter.getEggAlpha().powZn(s).mul(this.parameter.getMessage()).getImmutable();       
-        return new CPABERC24CiphertextSerParameter(publicKeyParameter.getParameters(), Em, Ev, Es, E1, E2, E3, E4);
+        return new preCiphertextPack(s,new CPABERC24CiphertextSerParameter(publicKeyParameter.getParameters(), Em, Ev, Es, E1, E2, E3, E4));
     }
 
     public PairingCipherSerParameter generateCoCiphertext(CPABERC24HeaderSerParameter preCiphertextParameter, String[] rhos) {
@@ -174,8 +185,8 @@ public class CPABERC24EncryptionGenerator implements PairingEncryptionGenerator,
         return new CPABERC24CiphertextSerParameter(publicKeyParameter.getParameters(), Em, Ev, Es, E1, E2, E3, E4);
     }
 
-    public PairingCipherSerParameter generateFinalCiphertext(CPABERC24CiphertextSerParameter preCiphertextParameter, CPABERC24HeaderSerParameter coCiphertextParameter) {
-        computeFinalEncapsulation(preCiphertextParameter,coCiphertextParameter);
+    public PairingCipherSerParameter generateFinalCiphertext(CPABERC24CiphertextSerParameter preCiphertextParameter, CPABERC24HeaderSerParameter coCiphertextParameter, Element s) {
+        computeFinalEncapsulation(preCiphertextParameter,coCiphertextParameter,s);
       
         return new CPABERC24CiphertextSerParameter(publicKeyParameter.getParameters(), preCiphertextParameter.getEm(), Ev, Es, E1, E2, E3, E4);
     }

@@ -31,6 +31,7 @@ import java.security.InvalidParameterException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
+import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.generators.CPABERC24EncryptionGenerator.preCiphertextPack;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.generators.CPABERC24KeyPairGenerator;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.serparams.CPABERC24SecretKeySerParameter;
 
@@ -56,6 +57,21 @@ public class RC24LDABABEEngineJUnitTest extends TestCase {
             System.exit(1);
         }
     }
+    private void try_decentral_valid_access_policy(Pairing pairing, PairingKeySerParameter publicKey, PairingKeySerParameter masterKey,
+                                         final String accessPolicyString, final String[] attributes) {
+        try {
+            int[][] accessPolicy = ParserUtils.GenerateAccessPolicy(accessPolicyString);
+            String[] rhos = ParserUtils.GenerateRhos(accessPolicyString);
+            try_decentral_access_policy(pairing, publicKey, masterKey, accessPolicy, rhos, attributes);
+        } catch (Exception e) {
+            System.out.println("Access policy satisfied test failed, " +
+                    "access policy = " + accessPolicyString + ", " +
+                    "attributes = " + Arrays.toString(attributes));
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+    
 
     private void try_valid_access_policy(Pairing pairing, PairingKeySerParameter publicKey, PairingKeySerParameter masterKey,
                                          final int[][] accessPolicy, final String[] rhos, final String[] attributes) {
@@ -68,7 +84,17 @@ public class RC24LDABABEEngineJUnitTest extends TestCase {
             System.exit(1);
         }
     }
-
+    private void try_decentral_valid_access_policy(Pairing pairing, PairingKeySerParameter publicKey, PairingKeySerParameter masterKey,
+                                         final int[][] accessPolicy, final String[] rhos, final String[] attributes) {
+        try {
+            try_decentral_access_policy(pairing, publicKey, masterKey, accessPolicy, rhos, attributes);
+        } catch (Exception e) {
+            System.out.println("Access policy satisfied test failed, " +
+                    "attributes = " + Arrays.toString(attributes));
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
     private void try_invalid_access_policy(Pairing pairing, PairingKeySerParameter publicKey, PairingKeySerParameter masterKey,
                                            final String accessPolicyString, final String[] attributes) {
         try {
@@ -85,11 +111,42 @@ public class RC24LDABABEEngineJUnitTest extends TestCase {
             System.exit(1);
         }
     }
+    private void try_decentral_invalid_access_policy(Pairing pairing, PairingKeySerParameter publicKey, PairingKeySerParameter masterKey,
+                                           final String accessPolicyString, final String[] attributes) {
+        try {
+            int[][] accessPolicy = ParserUtils.GenerateAccessPolicy(accessPolicyString);
+            String[] rhos = ParserUtils.GenerateRhos(accessPolicyString);
+            try_decentral_access_policy(pairing, publicKey, masterKey, accessPolicy, rhos, attributes);
+        } catch (InvalidCipherTextException e) {
+            //correct, expected exception, nothing to do.
+        } catch (Exception e) {
+            System.out.println("Access policy satisfied test failed, " +
+                    "access policy = " + accessPolicyString + ", " +
+                    "attributes = " + Arrays.toString(attributes));
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
 
     private void try_invalid_access_policy(Pairing pairing, PairingKeySerParameter publicKey, PairingKeySerParameter masterKey,
                                            final int[][] accessPolicy, final String[] rhos, final String[] attributes) {
         try {
             try_access_policy(pairing, publicKey, masterKey, accessPolicy, rhos, attributes);
+        } catch (InvalidCipherTextException e) {
+            //correct, expected exception, nothing to do.
+        } catch (InvalidParameterException e) {
+            //correct, expected exception, nothing to do.
+        } catch (Exception e) {
+            System.out.println("Access policy satisfied test failed, " +
+                    "attributes = " + Arrays.toString(attributes));
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+    private void try_decentral_invalid_access_policy(Pairing pairing, PairingKeySerParameter publicKey, PairingKeySerParameter masterKey,
+                                           final int[][] accessPolicy, final String[] rhos, final String[] attributes) {
+        try {
+            try_decentral_access_policy(pairing, publicKey, masterKey, accessPolicy, rhos, attributes);
         } catch (InvalidCipherTextException e) {
             //correct, expected exception, nothing to do.
         } catch (InvalidParameterException e) {
@@ -137,42 +194,6 @@ public class RC24LDABABEEngineJUnitTest extends TestCase {
         byte[] anSessionKey = engine.decapsulation(publicKey, secretKey, accessPolicy, rhos, header);
         Assert.assertArrayEquals(sessionKey, anSessionKey);
     }
-
-private void try_access_policy(Pairing pairing, PairingKeySerParameter publicKey, PairingKeySerParameter masterKey,
-                                   final int[][] accessPolicy, final String[] rhos, final String[] attributes)
-            throws InvalidCipherTextException, IOException, ClassNotFoundException {
-        //KeyGen and serialization
-        PairingKeySerParameter secretKey = engine.keyGen(publicKey, masterKey, attributes);
-        byte[] byteArraySecretKey = TestUtils.SerCipherParameter(secretKey);
-        CipherParameters anSecretKey = TestUtils.deserCipherParameters(byteArraySecretKey);
-        Assert.assertEquals(secretKey, anSecretKey);
-        secretKey = (PairingKeySerParameter)anSecretKey;
-
-        //Encryption and serialization
-        Element message = pairing.getGT().newRandomElement().getImmutable();
-        PairingCipherSerParameter ciphertext = engine.encryption(publicKey, accessPolicy, rhos, message);
-        byte[] byteArrayCiphertext = TestUtils.SerCipherParameter(ciphertext);
-        CipherParameters anCiphertext = TestUtils.deserCipherParameters(byteArrayCiphertext);
-        Assert.assertEquals(ciphertext, anCiphertext);
-        ciphertext = (PairingCipherSerParameter)anCiphertext;
-
-        //Decryption
-        Element anMessage = engine.decryption(publicKey, secretKey, accessPolicy, rhos, ciphertext);
-        Assert.assertEquals(message, anMessage);
-
-        //Encapsulation and serialization
-        PairingKeyEncapsulationSerPair encapsulationPair = engine.encapsulation(publicKey, accessPolicy, rhos);
-        byte[] sessionKey = encapsulationPair.getSessionKey();
-        PairingCipherSerParameter header = encapsulationPair.getHeader();
-        byte[] byteArrayHeader = TestUtils.SerCipherParameter(header);
-        CipherParameters anHeader = TestUtils.deserCipherParameters(byteArrayHeader);
-        Assert.assertEquals(header, anHeader);
-        header = (PairingCipherSerParameter)anHeader;
-
-        //Decapsulation
-        byte[] anSessionKey = engine.decapsulation(publicKey, secretKey, accessPolicy, rhos, header);
-        Assert.assertArrayEquals(sessionKey, anSessionKey);
-    }
     private void try_decentral_access_policy(Pairing pairing, PairingKeySerParameter publicKey, PairingKeySerParameter masterKey,
                                    final int[][] accessPolicy, final String[] rhos, final String[] attributes)
             throws InvalidCipherTextException, IOException, ClassNotFoundException {
@@ -186,18 +207,22 @@ private void try_access_policy(Pairing pairing, PairingKeySerParameter publicKey
 
         //Encryption and serialization
         Element message = pairing.getGT().newRandomElement().getImmutable();
-        PairingCipherSerParameter preCiphertext = engine.encryption(publicKey, accessPolicy, rhos, message);
-        PairingCipherSerParameter coCiphertext = engine.encryption(publicKey, accessPolicy, rhos, message);
-        PairingCipherSerParameter ciphertext = engine.encryption(publicKey, accessPolicy, rhos, message);
+        preCiphertextPack preCiphertextPack = engine.preEncryption(publicKey, accessPolicy, rhos, message);
+        PairingCipherSerParameter preCiphertext = preCiphertextPack.preCiphertext;
+        PairingCipherSerParameter coCiphertext = engine.coEncryption(publicKey, accessPolicy, rhos, preCiphertext);
+        PairingCipherSerParameter ciphertext = engine.finalEncryption(publicKey, accessPolicy, rhos, preCiphertext, coCiphertext, preCiphertextPack.s);
         byte[] byteArrayCiphertext = TestUtils.SerCipherParameter(ciphertext);
         CipherParameters anCiphertext = TestUtils.deserCipherParameters(byteArrayCiphertext);
         Assert.assertEquals(ciphertext, anCiphertext);
         ciphertext = (PairingCipherSerParameter)anCiphertext;
 
         //Decryption
+        //Verify in decrypt
+        Element anDecryptCheck = engine.decryptableCheck(publicKey, secretKey, accessPolicy, rhos, ciphertext);
+        Assert.assertEquals(pairing.getGT().newOneElement(), anDecryptCheck);
         Element anMessage = engine.decryption(publicKey, secretKey, accessPolicy, rhos, ciphertext);
         Assert.assertEquals(message, anMessage);
-
+        
         //Encapsulation and serialization
         PairingKeyEncapsulationSerPair encapsulationPair = engine.encapsulation(publicKey, accessPolicy, rhos);
         byte[] sessionKey = encapsulationPair.getSessionKey();
@@ -435,53 +460,53 @@ private void try_access_policy(Pairing pairing, PairingKeySerParameter publicKey
 
             //test examples
             System.out.println("Test example 1");
-            try_valid_access_policy(
+            try_decentral_valid_access_policy(
                     pairing, publicKey, masterKey,
                     AccessPolicyExamples.access_policy_example_1,
                     AccessPolicyExamples.access_policy_exampe_1_satisfied_1);
-            try_valid_access_policy(
+            try_decentral_valid_access_policy(
                     pairing, publicKey, masterKey,
                     AccessPolicyExamples.access_policy_example_1,
                     AccessPolicyExamples.access_policy_exampe_1_satisfied_2);
-            try_invalid_access_policy(
+            try_decentral_invalid_access_policy(
                     pairing, publicKey, masterKey,
                     AccessPolicyExamples.access_policy_example_1,
                     AccessPolicyExamples.access_policy_exampe_1_unsatisfied_1);
 
             //test example 2
             System.out.println("Test example 2");
-            try_valid_access_policy(
+            try_decentral_valid_access_policy(
                     pairing, publicKey, masterKey,
                     AccessPolicyExamples.access_policy_example_2,
                     AccessPolicyExamples.access_policy_exampe_2_satisfied_1);
-            try_valid_access_policy(
+            try_decentral_valid_access_policy(
                     pairing, publicKey, masterKey,
                     AccessPolicyExamples.access_policy_example_2,
                     AccessPolicyExamples.access_policy_exampe_2_satisfied_2);
-            try_invalid_access_policy(
+            try_decentral_invalid_access_policy(
                     pairing, publicKey, masterKey,
                     AccessPolicyExamples.access_policy_example_2,
                     AccessPolicyExamples.access_policy_exampe_2_unsatisfied_1);
-            try_invalid_access_policy(
+            try_decentral_invalid_access_policy(
                     pairing, publicKey, masterKey,
                     AccessPolicyExamples.access_policy_example_2,
                     AccessPolicyExamples.access_policy_exampe_2_unsatisfied_2);
-            try_invalid_access_policy(
+            try_decentral_invalid_access_policy(
                     pairing, publicKey, masterKey,
                     AccessPolicyExamples.access_policy_example_2,
                     AccessPolicyExamples.access_policy_exampe_2_unsatisfied_3);
 
             //test example 3
             System.out.println("Test example 3");
-            try_valid_access_policy(
+            try_decentral_valid_access_policy(
                     pairing, publicKey, masterKey,
                     AccessPolicyExamples.access_policy_example_3,
                     AccessPolicyExamples.access_policy_exampe_3_satisfied_1);
-            try_invalid_access_policy(
+            try_decentral_invalid_access_policy(
                     pairing, publicKey, masterKey,
                     AccessPolicyExamples.access_policy_example_3,
                     AccessPolicyExamples.access_policy_exampe_3_unsatisfied_1);
-            try_invalid_access_policy(
+           try_decentral_invalid_access_policy(
                     pairing, publicKey, masterKey,
                     AccessPolicyExamples.access_policy_example_3,
                     AccessPolicyExamples.access_policy_exampe_3_unsatisfied_2);
@@ -489,102 +514,102 @@ private void try_access_policy(Pairing pairing, PairingKeySerParameter publicKey
             if (engine.isAccessControlEngineSupportThresholdGate()) {
                 //test threshold example 1
                 System.out.println("Test threshold example 1");
-                try_valid_access_policy(
+                try_decentral_valid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_satisfied01);
-                try_valid_access_policy(
+                try_decentral_valid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_satisfied02);
-                try_valid_access_policy(
+                try_decentral_valid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_satisfied03);
-                try_valid_access_policy(
+                try_decentral_valid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_satisfied04);
-                try_valid_access_policy(
+                try_decentral_valid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_satisfied05);
-                try_valid_access_policy(
+                try_decentral_valid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_satisfied06);
-                try_valid_access_policy(
+                try_decentral_valid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_satisfied07);
-                try_valid_access_policy(
+                try_decentral_valid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_satisfied08);
-                try_valid_access_policy(
+                try_decentral_valid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_satisfied09);
-                try_valid_access_policy(
+                try_decentral_valid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_satisfied10);
-                try_valid_access_policy(
+                try_decentral_valid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_satisfied11);
-                try_invalid_access_policy(
+                try_decentral_invalid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_unsatisfied01);
-                try_invalid_access_policy(
+                try_decentral_invalid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_unsatisfied02);
-                try_invalid_access_policy(
+                try_decentral_invalid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_unsatisfied03);
-                try_invalid_access_policy(
+                try_decentral_invalid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_unsatisfied04);
-                try_invalid_access_policy(
+                try_decentral_invalid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_unsatisfied05);
-                try_invalid_access_policy(
+                try_decentral_invalid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_unsatisfied06);
-                try_invalid_access_policy(
+                try_decentral_invalid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_unsatisfied07);
-                try_invalid_access_policy(
+                try_decentral_invalid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
                         AccessPolicyExamples.access_policy_threshold_example_1_unsatisfied08);
-                try_invalid_access_policy(
+                try_decentral_invalid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_1_tree,
                         AccessPolicyExamples.access_policy_threshold_example_1_rho,
@@ -592,17 +617,17 @@ private void try_access_policy(Pairing pairing, PairingKeySerParameter publicKey
 
                 //test threshold example 2
                 System.out.println("Test threshold example 2");
-                try_valid_access_policy(
+                try_decentral_valid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_2_tree,
                         AccessPolicyExamples.access_policy_threshold_example_2_rho,
                         AccessPolicyExamples.access_policy_threshold_example_2_satisfied01);
-                try_invalid_access_policy(
+                try_decentral_invalid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_2_tree,
                         AccessPolicyExamples.access_policy_threshold_example_2_rho,
                         AccessPolicyExamples.access_policy_threshold_example_2_unsatisfied01);
-                try_invalid_access_policy(
+                try_decentral_invalid_access_policy(
                         pairing, publicKey, masterKey,
                         AccessPolicyExamples.access_policy_threshold_example_2_tree,
                         AccessPolicyExamples.access_policy_threshold_example_2_rho,
@@ -623,11 +648,11 @@ private void try_access_policy(Pairing pairing, PairingKeySerParameter publicKey
         this.engine = CPABERC24Engine.getInstance();
         System.out.println("Test " + engine.getEngineName() + " using " + AccessTreeEngine.SCHEME_NAME);
         engine.setAccessControlEngine(AccessTreeEngine.getInstance());
-        // runAllTests(PairingFactory.getPairingParameters(TestUtils.TEST_PAIRING_PARAMETERS_PATH_a_80_256),AccessGlobalSetExamples.access_global_set_exampe_1);
+        runAllTests(PairingFactory.getPairingParameters(TestUtils.TEST_PAIRING_PARAMETERS_PATH_a_80_256),AccessGlobalSetExamples.access_global_set_exampe_1);
         runAllDecentralTests(PairingFactory.getPairingParameters(TestUtils.TEST_PAIRING_PARAMETERS_PATH_a_80_256),AccessGlobalSetExamples.access_global_set_exampe_1);
         System.out.println("Test " + engine.getEngineName() + " using " + LSSSLW10Engine.SCHEME_NAME);
         engine.setAccessControlEngine(LSSSLW10Engine.getInstance());
-        // runAllTests(PairingFactory.getPairingParameters(TestUtils.TEST_PAIRING_PARAMETERS_PATH_a_80_256),AccessGlobalSetExamples.access_global_set_exampe_1);
+        runAllTests(PairingFactory.getPairingParameters(TestUtils.TEST_PAIRING_PARAMETERS_PATH_a_80_256),AccessGlobalSetExamples.access_global_set_exampe_1);
         runAllDecentralTests(PairingFactory.getPairingParameters(TestUtils.TEST_PAIRING_PARAMETERS_PATH_a_80_256),AccessGlobalSetExamples.access_global_set_exampe_1);
     }
 }

@@ -11,6 +11,7 @@ import cn.edu.buaa.crypto.encryption.abe.cpabe.genparams.CPABEKeyPairGenerationP
 import cn.edu.buaa.crypto.encryption.abe.cpabe.genparams.CPABESecretKeyGenerationParameter;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.generators.CPABERC24DecryptionGenerator;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.generators.CPABERC24EncryptionGenerator;
+import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.generators.CPABERC24EncryptionGenerator.preCiphertextPack;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.generators.CPABERC24KeyPairGenerator;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.generators.CPABERC24SecretKeyGenerator;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.serparams.*;
@@ -96,7 +97,7 @@ public class CPABERC24Engine extends CPABEEngine {
         return encryptionGenerator.generateCiphertext();
     }
 
-    public PairingCipherSerParameter preEncryption(PairingKeySerParameter publicKey, int[][] accessPolicyIntArrays, String[] rhos, Element message) {
+    public preCiphertextPack preEncryption(PairingKeySerParameter publicKey, int[][] accessPolicyIntArrays, String[] rhos, Element message) {
         if (!(publicKey instanceof CPABERC24PublicKeySerParameter)){
             PairingUtils.NotVerifyCipherParameterInstance(SCHEME_NAME, publicKey, CPABERC24PublicKeySerParameter.class.getName());
         }
@@ -106,24 +107,24 @@ public class CPABERC24Engine extends CPABEEngine {
         return encryptionGenerator.generatePreCiphertext();
     }
 
-    public PairingCipherSerParameter coEncryption(PairingKeySerParameter publicKey, int[][] accessPolicyIntArrays, String[] rhos,CPABERC24HeaderSerParameter preCiphertextParameter) {
+    public PairingCipherSerParameter coEncryption(PairingKeySerParameter publicKey, int[][] accessPolicyIntArrays, String[] rhos,PairingCipherSerParameter preCiphertextParameter) {
         if (!(publicKey instanceof CPABERC24PublicKeySerParameter)){
             PairingUtils.NotVerifyCipherParameterInstance(SCHEME_NAME, publicKey, CPABERC24PublicKeySerParameter.class.getName());
         }
         CPABERC24EncryptionGenerator encryptionGenerator = new CPABERC24EncryptionGenerator();
         encryptionGenerator.init(new CPABEEncryptionGenerationParameter(
                 accessControlEngine, publicKey, accessPolicyIntArrays, rhos, null));
-        return encryptionGenerator.generateCoCiphertext(preCiphertextParameter, rhos);
+        return encryptionGenerator.generateCoCiphertext((CPABERC24HeaderSerParameter)preCiphertextParameter, rhos);
     }
 
-    public PairingCipherSerParameter finalEncryption(PairingKeySerParameter publicKey, int[][] accessPolicyIntArrays, String[] rhos,CPABERC24CiphertextSerParameter preCiphertextParameter,CPABERC24HeaderSerParameter coCiphertextParameter) {
+    public PairingCipherSerParameter finalEncryption(PairingKeySerParameter publicKey, int[][] accessPolicyIntArrays, String[] rhos,PairingCipherSerParameter preCiphertextParameter,PairingCipherSerParameter coCiphertextParameter, Element s) {
         if (!(publicKey instanceof CPABERC24PublicKeySerParameter)){
             PairingUtils.NotVerifyCipherParameterInstance(SCHEME_NAME, publicKey, CPABERC24PublicKeySerParameter.class.getName());
         }
         CPABERC24EncryptionGenerator encryptionGenerator = new CPABERC24EncryptionGenerator();
         encryptionGenerator.init(new CPABEEncryptionGenerationParameter(
                 accessControlEngine, publicKey, accessPolicyIntArrays, rhos, null));
-        return encryptionGenerator.generateFinalCiphertext(preCiphertextParameter,coCiphertextParameter);
+        return encryptionGenerator.generateFinalCiphertext((CPABERC24CiphertextSerParameter)preCiphertextParameter,(CPABERC24HeaderSerParameter)coCiphertextParameter, s);
     }
 
     public PairingKeyEncapsulationSerPair encapsulation(PairingKeySerParameter publicKey, int[][] accessPolicyIntArrays, String[] rhos) {
@@ -152,6 +153,24 @@ public class CPABERC24Engine extends CPABEEngine {
         decryptionGenerator.init(new CPABEDecryptionGenerationParameter(
                 accessControlEngine, publicKey, secretKey, accessPolicyIntArrays, rhos, ciphertext));
         return decryptionGenerator.recoverMessage();
+    }
+
+    public Element decryptableCheck(PairingKeySerParameter publicKey, PairingKeySerParameter secretKey,
+                              int[][] accessPolicyIntArrays, String[] rhos, PairingCipherSerParameter ciphertext)
+            throws InvalidCipherTextException {
+        if (!(publicKey instanceof CPABERC24PublicKeySerParameter)){
+            PairingUtils.NotVerifyCipherParameterInstance(SCHEME_NAME, publicKey, CPABERC24PublicKeySerParameter.class.getName());
+        }
+        if (!(secretKey instanceof CPABERC24SecretKeySerParameter)){
+            PairingUtils.NotVerifyCipherParameterInstance(SCHEME_NAME, secretKey, CPABERC24SecretKeySerParameter.class.getName());
+        }
+        if (!(ciphertext instanceof CPABERC24CiphertextSerParameter)){
+            PairingUtils.NotVerifyCipherParameterInstance(SCHEME_NAME, ciphertext, CPABERC24CiphertextSerParameter.class.getName());
+        }
+        CPABERC24DecryptionGenerator decryptionGenerator = new CPABERC24DecryptionGenerator();
+        decryptionGenerator.init(new CPABEDecryptionGenerationParameter(
+                accessControlEngine, publicKey, secretKey, accessPolicyIntArrays, rhos, ciphertext));
+        return decryptionGenerator.recoverableCheck();
     }
 
     public byte[] decapsulation(PairingKeySerParameter publicKey, PairingKeySerParameter secretKey,
