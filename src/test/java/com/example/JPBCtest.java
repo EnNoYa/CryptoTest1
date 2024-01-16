@@ -13,6 +13,7 @@ public class JPBCtest {
 
         // 測量 paring 函數的執行時間
         Element g = pairing.getG1().newRandomElement().getImmutable();
+        Element egg = pairing.getGT().newRandomElement().getImmutable();
         Element z = pairing.getZr().newRandomElement().getImmutable();
         long startTimeParing = System.currentTimeMillis();
         for(int i=0; i<20; ++i){
@@ -41,10 +42,18 @@ public class JPBCtest {
         }
         long endITimePowzn = System.currentTimeMillis();
         long elapsedITimePowzn = endITimePowzn - startITimePowzn;
+
+        long startETimePowzn = System.currentTimeMillis();
+        for(int i=0; i<20; ++i){
+        Element resultIPowzn = egg.powZn(z).getImmutable();
+        }
+        long endETimePowzn = System.currentTimeMillis();
+        long elapsedETimePowzn = endETimePowzn - startETimePowzn;
         // 打印結果
         System.out.println("Paring 函數執行時間: " + elapsedTimeParing + " 毫秒");
         System.out.println("Powzn 函數執行時間: " + elapsedTimePowzn + " 毫秒");
         System.out.println("Immutable Paring 函數執行時間: " + elapsedITimeParing + " 毫秒");
         System.out.println("Immutable Powzn 函數執行時間: " + elapsedITimePowzn + " 毫秒");
+        System.out.println("EGG Powzn 函數執行時間: " + elapsedETimePowzn + " 毫秒");
     }
 }
