@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "java",
+            "name": "JPBCtest",
+            "request": "launch",
+            "mainClass": "com.example.JPBCtest",
+            "projectName": "CloudCrypto"
+        },
+        {
             "request": "launch",
             "name": "Launch Program",
             "type": "node",
