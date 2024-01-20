@@ -31,6 +31,7 @@ import java.security.SecureRandom;
  * Created by Weiran Liu on 2016/12/28.
  *
  * Liu-Liu-Wu CCA2-secure CP-ABE engine.
+ * https://link.springer.com/chapter/10.1007/978-3-319-69471-9_8
  */
 public class CPABELLW14Engine extends CPABEEngine {
     private static final String SCHEME_NAME = "Liu-Liu-Wu-14 CCA2-secure large-universe CP-ABE";

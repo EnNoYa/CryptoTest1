@@ -9,13 +9,13 @@ LW14 = [68.20241999999999,84.71555000000001,103.21343000000002,139.6523299999999
 fig = plt.figure()
 
 
-plt.plot(attributes, RC24, color='orange', linewidth=2, marker='.', label='RC24')
-plt.plot(attributes, HW14, color='blue', linewidth=2, marker='.', linestyle='--', label='HW14')
-plt.plot(attributes, LW14, color='purple', linewidth=2, marker='.', linestyle='--', label='LW14')
+plt.plot(attributes, RC24, color='orange', linewidth=2, marker='.', label='Ours')
+plt.plot(attributes, HW14, color='blue', linewidth=2, marker='.', linestyle='--', label='Hohenberger et al.')
+plt.plot(attributes, LW14, color='purple', linewidth=2, marker='.', linestyle='--', label='Li et al.')
 
 plt.legend(loc = 'upper left')
 plt.xlabel('Number of Attributes')
 plt.ylabel('Time Cost(ms)')
 
-plt.savefig('keygen.png')
+plt.savefig('keygenTime.png')
 plt.show()

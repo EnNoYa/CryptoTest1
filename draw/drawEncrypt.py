@@ -9,13 +9,13 @@ LW14 = [109.39634000000001,152.26907999999997,186.30131,232.76288,241.99493,287.
 fig = plt.figure()
 
 
-plt.plot(attributes, RC24, color='orange', linewidth=2, marker='.', label='RC24')
-plt.plot(attributes, HW14, color='blue', linewidth=2, marker='.', linestyle='--', label='HW14')
-plt.plot(attributes, LW14, color='purple', linewidth=2, marker='.', linestyle='--', label='LW14')
+plt.plot(attributes, RC24, color='orange', linewidth=2, marker='.', label='Ours')
+plt.plot(attributes, HW14, color='blue', linewidth=2, marker='.', linestyle='--', label='Hohenberger et al.')
+plt.plot(attributes, LW14, color='purple', linewidth=2, marker='.', linestyle='--', label='Li et al.')
 
 plt.legend(loc = 'upper left')
 plt.xlabel('Number of Attributes')
 plt.ylabel('Time Cost(ms)')
 
-plt.savefig('encrypt.png')
+plt.savefig('encryptTime.png')
 plt.show()
