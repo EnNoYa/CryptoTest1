@@ -2,6 +2,9 @@ package cn.edu.buaa.crypto.algebra.serparams;
 
 import it.unisa.dia.gas.jpbc.PairingParameters;
 import org.bouncycastle.crypto.CipherParameters;
+import org.json.JSONObject;
+
+import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.tools.Converter;
 
 import java.io.Serializable;
 
@@ -20,6 +23,12 @@ public class PairingCipherSerParameter implements CipherParameters, Serializable
 
     public PairingParameters getParameters() {
         return parameters;
+    }
+
+    public String exportJSONstring() throws Exception{
+        JSONObject json = new JSONObject();
+        json.put("Param", Converter.encodeObject(getParameters()));
+        return json.toString();
     }
 
     @Override

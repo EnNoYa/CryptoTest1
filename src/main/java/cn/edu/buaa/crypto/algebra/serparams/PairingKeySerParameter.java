@@ -1,5 +1,8 @@
 package cn.edu.buaa.crypto.algebra.serparams;
 
+import org.json.JSONObject;
+
+import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.tools.Converter;
 import it.unisa.dia.gas.jpbc.PairingParameters;
 
 /**
@@ -20,6 +23,14 @@ public class PairingKeySerParameter extends PairingCipherSerParameter {
     public boolean isPrivate()
     {
         return privateKey;
+    }
+
+    @Override
+    public String exportJSONstring() throws Exception{
+        JSONObject json = new JSONObject();
+        json.put("Param", Converter.encodeObject(getParameters()));
+        json.put("Pri", isPrivate());
+        return json.toString();
     }
 
     @Override

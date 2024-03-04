@@ -1,6 +1,7 @@
 package cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.serparams;
 
 import cn.edu.buaa.crypto.algebra.serparams.PairingKeySerParameter;
+import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.tools.Converter;
 import cn.edu.buaa.crypto.utils.PairingUtils;
 import it.unisa.dia.gas.jpbc.Element;
 import it.unisa.dia.gas.jpbc.Pairing;
@@ -10,6 +11,9 @@ import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Edited by ENY 
@@ -133,6 +137,61 @@ public class CPABERC24PublicKeySerParameter extends PairingKeySerParameter {
     // public Map<String, Element> getGH() { return this.gH; }
     // public Element getGHAt(String attribute) { return this.gH.get(attribute).duplicate(); }
     public Element getCt() { return this.ct.duplicate(); }
+
+    
+    @Override
+    public String exportJSONstring() throws Exception{
+        JSONObject json = new JSONObject();
+        json.put("Param", Converter.encodeObject(getParameters()));
+        json.put("g", Converter.encode(getG()));
+        json.put("gEta", Converter.encode(getGEta()));
+        json.put("eggHb", Converter.encodeObject(byteArraysEggHb));
+        json.put("gHh", Converter.encodeObject(byteArraysGHh));
+        json.put("gHg", Converter.encodeObject(byteArraysGHg));
+        json.put("eggAlpha", Converter.encode(getEggAlpha()));
+        json.put("eggH", Converter.encode(getEggH()));
+        json.put("gH", Converter.encode(getGH()));
+        json.put("ct", Converter.encode(getCt()));
+        return json.toString();
+    }
+
+    public static CPABERC24PublicKeySerParameter importJSONstring(String Jss) throws Exception{
+        JSONObject Js = new JSONObject(Jss);
+        
+        PairingParameters parameters = (PairingParameters)Converter.decodeObject((String)Js.get("Param"));
+        Pairing pairing = PairingFactory.getPairing(parameters);
+
+        Element g = Converter.decode((String)Js.get("g"),pairing.getG1());
+        Element gEta = Converter.decode((String)Js.get("gEta"),pairing.getG1());
+        Map<String, byte[]> bEggHb = (Map<String, byte[]>)Converter.decodeObject((String)Js.get("eggHb"));
+        Map<String, byte[]> bGHh = (Map<String, byte[]>)Converter.decodeObject((String)Js.get("gHh"));
+        Map<String, byte[]> bGHg = (Map<String, byte[]>)Converter.decodeObject((String)Js.get("gHg"));
+  
+        Map<String, Element> eggHb = new HashMap<String, Element>();;
+        Map<String, Element> gHh = new HashMap<String, Element>();;
+        Map<String, Element> gHg = new HashMap<String, Element>();;
+        
+        for (String attribute : bEggHb.keySet()) {
+            Element tmp = pairing.getGT().newElement();
+            tmp.setFromBytes( bEggHb.get(attribute));
+            eggHb.put(attribute, tmp);
+
+            Element tmp2= pairing.getG1().newElement();
+            tmp2.setFromBytes( bGHh.get(attribute));
+            gHh.put(attribute, tmp2);
+
+            Element tmp3 = pairing.getG1().newElement();
+            tmp3.setFromBytes( bGHg.get(attribute));
+            gHg.put(attribute, tmp3);
+        }
+
+        Element eggAlpha = Converter.decode((String)Js.get("eggAlpha"),pairing.getGT());
+        Element eggH = Converter.decode((String)Js.get("eggH"),pairing.getGT());
+        Element gH = Converter.decode((String)Js.get("gH"),pairing.getG1());
+        Element ct = Converter.decode((String)Js.get("ct"),pairing.getZr());
+
+        return new CPABERC24PublicKeySerParameter(parameters, g, gEta, eggAlpha, eggHb, gHh, gHg, eggH, gH, ct);   
+    }
 
     @Override
     public boolean equals(Object anObject) {

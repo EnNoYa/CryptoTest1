@@ -3,14 +3,7 @@ package com.example.encryption.abe;
 import cn.edu.buaa.crypto.access.lsss.lw10.LSSSLW10Engine;
 import cn.edu.buaa.crypto.access.parser.ParserUtils;
 import cn.edu.buaa.crypto.access.tree.AccessTreeEngine;
-import cn.edu.buaa.crypto.algebra.generators.AsymmetricKeySerPairGenerator;
 import cn.edu.buaa.crypto.algebra.serparams.*;
-import cn.edu.buaa.crypto.chameleonhash.ChameleonHasher;
-import cn.edu.buaa.crypto.chameleonhash.kr00b.KR00bDigestHasher;
-import cn.edu.buaa.crypto.chameleonhash.kr00b.dlog.DLogKR00bHasher;
-import cn.edu.buaa.crypto.chameleonhash.kr00b.dlog.DLogKR00bKeyGenerationParameters;
-import cn.edu.buaa.crypto.chameleonhash.kr00b.dlog.DLogKR00bKeyPairGenerator;
-import cn.edu.buaa.crypto.chameleonhash.kr00b.dlog.DLogKR00bUniversalHasher;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.CPABERC24Engine;
 import com.example.TestUtils;
 import com.example.access.AccessPolicyExamples;
@@ -22,8 +15,7 @@ import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 import junit.framework.TestCase;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.InvalidCipherTextException;
-import org.bouncycastle.crypto.KeyGenerationParameters;
-import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.json.JSONObject;
 import org.junit.Assert;
 
 import java.io.IOException;
@@ -34,6 +26,7 @@ import java.util.Arrays;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.generators.CPABERC24EncryptionGenerator.preCiphertextPack;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.generators.CPABERC24KeyPairGenerator;
 import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.serparams.CPABERC24SecretKeySerParameter;
+import cn.edu.buaa.crypto.encryption.abe.cpabe.rc24.serparams.CPABERC24PublicKeySerParameter;
 
 /**
  * Created by Weiran Liu on 2016/11/21.
@@ -237,12 +230,17 @@ public class RC24LDABABEEngineJUnitTest extends TestCase {
         Assert.assertArrayEquals(sessionKey, anSessionKey);
     }
 
-    public void runAllTests(PairingParameters pairingParameters, final String[] attributes) {
+    public void runAllTests(PairingParameters pairingParameters, final String[] attributes)throws Exception {
         try {
             Pairing pairing = PairingFactory.getPairing(pairingParameters);
             // Setup and serialization
             PairingKeySerPair keyPair = engine.setup(pairingParameters, 50, attributes);
             PairingKeySerParameter publicKey = keyPair.getPublic();
+
+            String Jss = publicKey.exportJSONstring();
+            PairingKeySerParameter rePublickey = CPABERC24PublicKeySerParameter.importJSONstring(Jss);
+            Assert.assertEquals(publicKey, rePublickey);
+
             byte[] byteArrayPublicKey = TestUtils.SerCipherParameter(publicKey);
             CipherParameters anPublicKey = TestUtils.deserCipherParameters(byteArrayPublicKey);
             Assert.assertEquals(publicKey, anPublicKey);
@@ -644,7 +642,7 @@ public class RC24LDABABEEngineJUnitTest extends TestCase {
             System.exit(1);
         }
     }
-    public void testCPABERC24Engine() {
+    public void testCPABERC24Engine() throws Exception{
         this.engine = CPABERC24Engine.getInstance();
         System.out.println("Test " + engine.getEngineName() + " using " + AccessTreeEngine.SCHEME_NAME);
         engine.setAccessControlEngine(AccessTreeEngine.getInstance());
